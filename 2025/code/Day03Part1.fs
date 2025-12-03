@@ -6,7 +6,7 @@ module Day03Part1 =
 
     let getFirstDigit(inputLine:string) =
 
-        inputLine[0 .. (String.length inputLine) - 2]
+        inputLine[ .. (String.length inputLine) - 2]
         |> Seq.max
 
     let getSecondDigit(inputLine:string, firstDigit:char) = 
