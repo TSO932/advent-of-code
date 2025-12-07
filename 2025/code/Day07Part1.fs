@@ -6,8 +6,6 @@ module Day07Part1 =
 
     let splitBeams((count, beamRow), deflectorRow) =
 
-        let newBeams = beamRow
-
         let defelect ((count, newBe:char[]), (pos, be, ro)) =
 
             if ro = '^' && (be = '|' || be = 'S') then
@@ -19,7 +17,7 @@ module Day07Part1 =
         (beamRow, deflectorRow)
         ||> Array.zip
         |> Array.mapi (fun i (b, d) -> (i, b, d))
-        |> Array.fold (fun acc elem -> defelect(acc, elem))  (count, newBeams)
+        |> Array.fold (fun acc elem -> defelect(acc, elem))  (count, beamRow)
 
     let run (input:seq<string>) =
 
