@@ -9,13 +9,13 @@ type Day07Part2 () =
     [<Test>]
     member _.SplitBeams() =
 
-        let inputBeamRow = "......|.|......" |> Array.ofSeq
+        let inputBeamRow = ("......|.|......" |> Array.ofSeq, 1)
         let inputdeflectorRow = "......^.^......" |> Array.ofSeq
         let expected = [
-            ".....|.|......." |> Array.ofSeq;
-            ".....|...|....." |> Array.ofSeq;
-            ".......|......." |> Array.ofSeq;
-            ".......|.|....." |> Array.ofSeq
+            (".....|.|......." |> Array.ofSeq, 1);
+            (".....|...|....." |> Array.ofSeq, 1);
+            (".......|......." |> Array.ofSeq, 1);
+            (".......|.|....." |> Array.ofSeq, 1)
             ]
 
         Assert.That(Day07Part2.splitBeams(inputBeamRow, inputdeflectorRow), Is.EqualTo(expected))
