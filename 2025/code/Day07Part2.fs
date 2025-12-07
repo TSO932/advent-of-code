@@ -4,9 +4,9 @@ open System
 
 module Day07Part2 =
 
-    let splitBeams((count, beamRow), deflectorRow) =
+    let splitBeams(beamRow, deflectorRow) =
 
-        let deflect((count, newBe:char[]), (pos, be, ro)) =
+        let deflect(newBe:char[], (pos, be, ro)) =
 
             if ro = '^' && (be = '|' || be = 'S') then
                 let altBe = Array.copy newBe
@@ -14,9 +14,9 @@ module Day07Part2 =
                 altBe.[pos] <- '.'
                 newBe.[pos] <- '.'
                 newBe.[pos + 1] <- '|'
-                [ (count + 1, altBe) ; (count + 1, newBe) ]
+                [ altBe ; newBe ]
             else
-                [ (count, newBe) ]
+                [ newBe ]
 
         let deflect2 (paths, elem) =
             paths
@@ -26,7 +26,7 @@ module Day07Part2 =
         (beamRow, deflectorRow)
         ||> Array.zip
         |> Array.mapi (fun i (b, d) -> (i, b, d))
-        |> Array.fold (fun acc elem -> deflect2(acc, elem))  ([ count, beamRow ])
+        |> Array.fold (fun acc elem -> deflect2(acc, elem))  ([ beamRow ])
 
     let splitBeamWorlds (beamRows, deflectorRow) =
 
@@ -41,5 +41,5 @@ module Day07Part2 =
 
         tachyonManifold
         |> Seq.tail
-        |> Seq.fold (fun acc deflectorRow -> splitBeamWorlds(acc, deflectorRow)) [ (0, startingBeamRow) ]
+        |> Seq.fold (fun acc deflectorRow -> splitBeamWorlds(acc, deflectorRow)) [ startingBeamRow ]
         |> Seq.length
