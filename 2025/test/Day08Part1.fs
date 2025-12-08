@@ -9,12 +9,17 @@ type Day08Part1 () =
     [<Test>]
     member _.GetDistance() =
 
-        Assert.That(Day08Part1.getDistance(((162.0,817.0,812.0),(425.0,690.0,689.0))), Is.EqualTo(316.902).Within(0.001))
+        Assert.That(Day08Part1.getDistance(((162L,817L,812L),(425L,690L,689L))), Is.EqualTo(100427L))
 
     [<Test>]
     member _.ParseLine() =
 
-        Assert.That(Day08Part1.parseLine("162,817,812"), Is.EqualTo((162.0,817.0,812.0)))
+        Assert.That(Day08Part1.parseLine("162,817,812"), Is.EqualTo((162L,817L,812L)))
+
+    [<Test>]
+    member _.BackToText() =
+
+        Assert.That(Day08Part1.backToText((162.0,817.0,812.0)), Is.EqualTo(("162817812")))
 
     [<Test>]
     member _.Example() =
@@ -42,4 +47,25 @@ type Day08Part1 () =
             "425,690,689"
             ]
 
-        Assert.That(Day08Part1.run(input), Is.EqualTo(40))
+        Assert.That(Day08Part1.runCount(input, 10), Is.EqualTo(40))
+
+    [<Test>]
+    member _.GroupThat() =
+    
+        let input = [
+            ("425690689", "162817812");
+            ("431825988", "162817812");
+            ("80596715", "906360560");
+            ("425690689", "431825988");
+            ("98492344", "8626135");
+            ("117168530", "52470668");
+            ("941993340", "81998718");
+            ("739650466", "906360560");
+            ("425690689", "346949466");
+            ("98492344", "906360560")
+            ]
+
+        Assert.That(Day08Part1.getGroups(input), Is.EqualTo(40))
+       
+       
+        

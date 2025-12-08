@@ -4,33 +4,93 @@ open System
 
 module Day08Part1 =
 
-    let getDistance((x1:float,y1:float,z1:float), (x2:float,y2:float,z2:float)) =
+    let getDistance((x1:int64,y1:int64,z1:int64), (x2:int64,y2:int64,z2:int64)) =
 
-        sqrt ((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+        let square n = n * n
+
+        square (x1 - x2) + square (y1 - y2) + square (z1 - z2)
     
 
     let parseLine(inputLine:string) =
         
         inputLine.Split ','
-        |> Seq.map Double.Parse
+        |> Seq.map Int64.Parse
         |> Array.ofSeq
         |> fun a -> (a[0], a[1], a[2])
 
+    let backToText(a,b,c) =
 
-    let run(input:seq<string>) =
+        a.ToString() + b.ToString() + c.ToString()
 
-        let pairCount = 10
+    let getGroups(pairs:seq<string*string>) =
 
+        let initialGroups =
+            pairs
+            |> Seq.map (fun (a, b) -> [a; b])
+            |> List.ofSeq
+
+        let getGroup(location) =
+
+            let rec getGr(currentLocations) =
+
+                let findMatch(grp) =
+                    let g = Array.ofSeq grp
+                    currentLocations |> Seq.contains g[0] || currentLocations |> Seq.contains g[1] 
+
+                let newGroups =
+                    initialGroups
+                    |> Seq.filter findMatch
+                    |> Seq.concat
+                    |> Seq.distinct
+                    |> Seq.sort
+                if Seq.length currentLocations = Seq.length newGroups then
+                    newGroups
+                else
+                    getGr (newGroups)
+
+            getGr [location]
+
+        let concatLocations(locationSequence) =
+
+            let rec concatLocations (locSeq, locStr) =
+                if Seq.length locSeq = 0 then
+                    locStr
+                else
+                    concatLocations(Seq.tail locSeq, locStr + Seq.head locSeq + "*")
+
+            concatLocations(locationSequence, "")
+  
+        initialGroups
+            |> Seq.concat
+            |> Seq.map getGroup
+            |> Seq.map concatLocations
+            |> Seq.distinct
+            |> Seq.map ((fun locs -> locs |> Seq.filter ((=) '*')) >> Seq.length)
+            |> Seq.sortDescending
+            |> Seq.chunkBySize 3
+            |> Seq.head
+            |> Seq.fold (fun a x -> a * x) 1
+
+
+    let runCount(input:seq<string>, pairCount) =
+
+        let getPairs(lst) =
+            lst |> List.mapi (fun i a -> lst |> List.mapi (fun j b -> if i < j then [a; b] else []))
+                |> List.concat
+                |> List.filter (fun a -> List.length a = 2) 
         input
         |> Seq.map parseLine
         |> List.ofSeq
-        |> CommonFunctions.allCombinations
-        |> List.filter (fun a -> List.length a = 2)
+        |> getPairs
         |> List.map (fun a -> (a[0], a[1]))
         |> List.map (fun a -> (a, getDistance a))
         |> List.sortBy snd
         |> List.mapi (fun i a -> (fst a, i))
         |> List.filter (fun (_, i) -> i < pairCount)
         |> List.map fst
+        |> List.map (fun (a, b) -> (backToText a, backToText b))
+        |> getGroups
 
-        
+    let run(input:seq<string>) =
+
+        runCount(input, 1000)
