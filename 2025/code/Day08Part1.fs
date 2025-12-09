@@ -1,6 +1,7 @@
 namespace _2025
 
 open System
+open System.Collections.Generic
 
 module Day08Part1 =
 
@@ -72,6 +73,53 @@ module Day08Part1 =
             |> Seq.fold (fun a x -> a * x) 1
 
 
+    let getGroups2(pairs:seq<string*string>) =
+    
+        // Initialize parent and rank dictionaries
+        let nodes =
+            pairs
+            |> Seq.map (fun (a, b) -> [a; b])
+            |> Seq.concat
+            |> Seq.distinct
+            |> Seq.toArray
+
+        let parent = Dictionary<string, string>()
+        let rank = Dictionary<string, int>()
+        for node in nodes do
+            parent.[node] <- node
+            rank.[node] <- 0
+
+        // Find with path compression
+        let rec find (x:string) =
+            if parent.[x] <> x then
+                parent.[x] <- find parent.[x]
+            parent.[x]
+
+        // Union by rank
+        let union (x:string) (y:string) =
+            let xRoot = find x
+            let yRoot = find y
+            if xRoot <> yRoot then
+                if rank.[xRoot] < rank.[yRoot] then
+                    parent.[xRoot] <- yRoot
+                elif rank.[xRoot] > rank.[yRoot] then
+                    parent.[yRoot] <- xRoot
+                else
+                    parent.[yRoot] <- xRoot
+                    rank.[xRoot] <- rank.[xRoot] + 1
+
+        // Apply union for all pairs
+        for (a, b) in pairs do
+            union a b
+        
+        nodes
+        |> Seq.groupBy (fun node -> find node)
+        |> Seq.map (snd >> Seq.length)
+        |> Seq.sortDescending
+        |> Seq.chunkBySize 3
+        |> Seq.head
+        |> Seq.fold (fun a x -> a * x) 1
+
     let runCount(input:seq<string>, pairCount) =
 
         let getPairs(lst) =
@@ -89,8 +137,12 @@ module Day08Part1 =
         |> List.filter (fun (_, i) -> i < pairCount)
         |> List.map fst
         |> List.map (fun (a, b) -> (backToText a, backToText b))
-        |> getGroups
+        |> getGroups2
 
     let run(input:seq<string>) =
 
         runCount(input, 1000)
+
+
+
+   
