@@ -13,5 +13,5 @@ open _2025
 // printfn "Day  5 Part 2: %i" (Day05Part2.run (File.ReadAllLines("../input/Day05/input.txt")))
 // printfn "Day  6 Part 1: %i" (Day06Part1.run (File.ReadAllLines("../input/Day06/input.txt")))
 // printfn "Day  6 Part 2: %i" (Day06Part2.run (File.ReadAllLines("../input/Day06/input.txt")))
-printfn "Day  7 Part 1: %i" (Day07Part1.run (File.ReadAllLines("../input/Day07/input.txt")))
-printfn "Day  7 Part 2: %i" (Day07Part2.run (File.ReadAllLines("../input/Day07/input.txt")))
+// printfn "Day  7 Part 1: %i" (Day07Part1.run (File.ReadAllLines("../input/Day07/input.txt")))
+printfn "Day  8 Part 1: %i" (Day08Part1.run (File.ReadAllLines("../input/Day08/input.txt")))
