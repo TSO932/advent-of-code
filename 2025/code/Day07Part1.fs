@@ -9,9 +9,9 @@ module Day07Part1 =
         let deflect((count, newBe:char[]), (pos, be, ro)) =
 
             if ro = '^' && (be = '|' || be = 'S') then
-                newBe.[pos - 1] <- '|'
-                newBe.[pos] <- '.'
-                newBe.[pos + 1] <- '|'
+                newBe[pos - 1] <- '|'
+                newBe[pos] <- '.'
+                newBe[pos + 1] <- '|'
                 (count + 1, newBe)
             else
                 (count, newBe)

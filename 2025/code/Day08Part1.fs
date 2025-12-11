@@ -75,7 +75,6 @@ module Day08Part1 =
 
     let getGroups2(pairs:seq<string*string>) =
     
-        // Initialize parent and rank dictionaries
         let nodes =
             pairs
             |> Seq.map (fun (a, b) -> [a; b])
@@ -83,32 +82,35 @@ module Day08Part1 =
             |> Seq.distinct
             |> Seq.toArray
 
-        let parent = Dictionary<string, string>()
-        let rank = Dictionary<string, int>()
-        for node in nodes do
-            parent.[node] <- node
-            rank.[node] <- 0
+        let parent =
+            nodes
+            |> Seq.map (fun node -> (node, node))
+            |> dict
+            |> Dictionary
+        
+        let rank =
+            nodes
+            |> Seq.map (fun node -> (node, 0))
+            |> dict
+            |> Dictionary
 
-        // Find with path compression
         let rec find (x:string) =
-            if parent.[x] <> x then
-                parent.[x] <- find parent.[x]
-            parent.[x]
+            if parent[x] <> x then
+                parent[x] <- find parent[x]
+            parent[x]
 
-        // Union by rank
         let union (x:string) (y:string) =
             let xRoot = find x
             let yRoot = find y
             if xRoot <> yRoot then
-                if rank.[xRoot] < rank.[yRoot] then
+                if rank[xRoot] < rank[yRoot] then
                     parent.[xRoot] <- yRoot
-                elif rank.[xRoot] > rank.[yRoot] then
-                    parent.[yRoot] <- xRoot
+                elif rank[xRoot] > rank[yRoot] then
+                    parent[yRoot] <- xRoot
                 else
-                    parent.[yRoot] <- xRoot
-                    rank.[xRoot] <- rank.[xRoot] + 1
+                    parent[yRoot] <- xRoot
+                    rank[xRoot] <- rank[xRoot] + 1
 
-        // Apply union for all pairs
         for (a, b) in pairs do
             union a b
         
