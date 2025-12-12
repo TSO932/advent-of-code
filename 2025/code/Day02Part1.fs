@@ -13,7 +13,7 @@ module Day02Part1 =
     let expandRange(startEnd:seq<int64>) =
 
         let first = Seq.head startEnd
-        let last = startEnd |> Seq.tail |> Seq.exactlyOne
+        let last = Seq.last startEnd
 
         [| first .. last |] |> Seq.ofArray
 

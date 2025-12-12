@@ -3,7 +3,7 @@ namespace _2025
 open System
 open System.Collections.Generic
 
-module Day08Part1 =
+module Day08Part2 =
 
     let getDistance((x1:int64,y1:int64,z1:int64), (x2:int64,y2:int64,z2:int64)) =
 
@@ -21,8 +21,7 @@ module Day08Part1 =
 
     let backToText(a,b,c) =
 
-        a.ToString() + b.ToString() + c.ToString()
-
+        a.ToString() + "," + b.ToString() + c.ToString()
 
     let getGroups(pairs:seq<string*string>) =
     
@@ -50,7 +49,18 @@ module Day08Part1 =
                 parent[x] <- find parent[x]
             parent[x]
 
-        let union (x:string) (y:string) =
+        let isOnlyOne() =
+
+            let firstOne =
+                parent.Values
+                |> Seq.head
+                |> find
+
+            parent.Values
+            |> Seq.exists  (fun node -> find node <> firstOne)
+            |> not
+
+        let union (x:string, y:string) =
             let xRoot = find x
             let yRoot = find y
             if xRoot <> yRoot then
@@ -62,40 +72,44 @@ module Day08Part1 =
                     parent[yRoot] <- xRoot
                     rank[xRoot] <- rank[xRoot] + 1
 
-        for (a, b) in pairs do
-            union a b
-        
-        nodes
-        |> Seq.groupBy (fun node -> find node)
-        |> Seq.map (snd >> Seq.length)
-        |> Seq.sortDescending
-        |> Seq.chunkBySize 3
-        |> Seq.head
-        |> Seq.fold (fun a x -> a * x) 1
+        let rec unionise(ps:seq<string*string>) =
 
-    let runCount(input:seq<string>, pairCount) =
+            let pair = Seq.head ps
+
+            union pair
+
+            if isOnlyOne() then
+                let getX(coords:string) =
+                    coords.Split ','
+                    |> Seq.head
+                    |> Int64.Parse
+
+                getX(fst pair) * getX(snd pair)
+            else
+                ps
+                |> Seq.tail
+                |> unionise
+        
+        unionise(pairs)
+
+
+    let run(input:seq<string>) =
 
         let getPairs(lst) =
             lst |> List.mapi (fun i a -> lst |> List.mapi (fun j b -> if i < j then [a; b] else []))
                 |> List.concat
                 |> List.filter (fun a -> List.length a = 2)
-    
+ 
         input
         |> Seq.map parseLine
         |> List.ofSeq
         |> getPairs
         |> List.map (fun a -> (a[0], a[1]))
         |> List.map (fun a -> (a, getDistance a))
-        |> List.sortBy snd
-        |> List.mapi (fun i a -> (fst a, i))
-        |> List.filter (fun (_, i) -> i < pairCount)
-        |> List.map fst
-        |> List.map (fun (a, b) -> (backToText a, backToText b))
+        |> List.sortBy snd        
+        |> List.map (fun ((a, b), _) -> (backToText a, backToText b))
         |> getGroups
 
-    let run(input:seq<string>) =
-
-        runCount(input, 1000)
 
 
 
