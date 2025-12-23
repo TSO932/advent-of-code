@@ -32,7 +32,6 @@ module Day10Part1 =
 
         let rec findSwitches(switchOptions:bool[][], buttons:bool[][], idx:int) =
         
-            let bobTest = [| false; false; false; false |]
             if Array.contains switches switchOptions then
                 idx
             else
