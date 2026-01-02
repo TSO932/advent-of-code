@@ -1,12 +1,11 @@
 namespace _2025
 
 open System
+open System.Collections.Generic
 
 module Day10Part2 =
 
     let parseLine(input:string) =
-        
-        printfn "%s" input
 
         let parts = input.Split ' '
 
@@ -36,46 +35,62 @@ module Day10Part2 =
             |> Array.map buttonMaker        
             |> Array.fold (fun combos buttons ->  buttonCombinator( combos, buttons )) [| [|  |] |]
 
+        let xor(a, b) =
+            Array.zip a b
+            |> Array.map (fun (s, b) -> (s || b) && not (s && b))
+
+        let foldXor(combos) =
+            combos
+            |> Array.fold (fun acc combo -> xor (acc, combo)) (Array.zeroCreate<bool> currentJoltages.Length)
+
+        let buttonComboXor =
+            buttonCombos
+            |> Seq.map (fun combo -> (combo, foldXor(combo)))
+            |> dict
+            |> Dictionary
+
+        let cache = Dictionary<_,_>()
 
         let rec doProcess(currentJoltages) =
 
             if Array.sum currentJoltages = 0 then
                 0
             else
-                let findJoltage(switches:bool[]) =
+                match cache.TryGetValue(currentJoltages) with
+                | true, memorisedAnswer -> memorisedAnswer
+                | _ -> 
+                    let getButtonPresses(switches:bool[]) =
 
-                    let xor(a, b) =
-                        Array.zip a b
-                        |> Array.map (fun (s, b) -> (s || b) && not (s && b))
+                        let foldRemainingJoltages(combos) =
+                    
+                            let reduceJoltages(acc, combo) =
+                                (acc, combo)
+                                ||> Array.zip
+                                |> Array.map (fun (a, c) -> max 0 (a - if c then 1 else 0))
 
-                    let foldXor(combos) =
-                        combos
-                        |> Array.fold (fun acc combo -> xor (acc, combo)) (Array.zeroCreate<bool> switches.Length)
+                            combos
+                            |> Array.fold (fun acc combo -> reduceJoltages(acc, combo)) currentJoltages
+                            |> Array.map (fun n -> n/2)
 
-                    let foldRemainingJoltages(combos) =
+                        let viablePaths =
+                            buttonCombos
+                            |> Array.filter (fun combo -> buttonComboXor[combo] = switches)
+                            |> Array.map (fun combo -> (foldRemainingJoltages combo, Array.length combo))
 
-                        let reduceJoltages(acc, combo) =
-                            (acc, combo)
-                            ||> Array.zip
-                            |> Array.map (fun (a, c) -> max 0 (a - if c then 1 else 0))
+                        if Array.length viablePaths = 0 then
+                            9999999
+                        else
+                            viablePaths
+                            |> Array.map (fun (remJolts, n) -> n + 2 * doProcess(remJolts))
+                            |> Array.min
 
-                        combos
-                        |> Array.fold (fun acc combo -> reduceJoltages(acc, combo)) currentJoltages
-                        |> Array.map (fun n -> n/2)
+                    let buttonPresses =
+                        currentJoltages
+                        |> Array.map (fun n -> n % 2 = 1)
+                        |> getButtonPresses
 
-                    let clouseau =
-                        buttonCombos
-                        |> Array.map (fun combo -> (foldXor combo, foldRemainingJoltages combo, Array.length combo))
-                        |> Array.filter (fun ( combo, _, _ ) -> combo = switches)|> Array.map (fun (_, remJolts, n) -> n + 2 * doProcess(remJolts))
-
-                    if Array.length clouseau = 0 then
-                        2
-                    else
-                        Array.min clouseau
-
-                currentJoltages
-                |> Array.map (fun n -> n % 2 = 1)
-                |> findJoltage
+                    cache.Add(currentJoltages, buttonPresses)
+                    buttonPresses
 
         doProcess currentJoltages
     

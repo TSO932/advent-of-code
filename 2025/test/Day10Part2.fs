@@ -14,21 +14,21 @@ type Day10Part2 () =
         Assert.That(Day10Part2.parseLine(input), Is.EqualTo(10))
 
        
-    // [<Test>]
+    [<Test>]
     member _.parseLine2() =
     
         let input = "[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}"
 
         Assert.That(Day10Part2.parseLine(input), Is.EqualTo(12))
 
-    // [<Test>]
+    [<Test>]
     member _.parseLine3() =
     
         let input = "[.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}"
 
         Assert.That(Day10Part2.parseLine(input), Is.EqualTo(11))
 
-    // [<Test>]
+    [<Test>]
     member _.Example() =
     
         let input = [
@@ -39,15 +39,4 @@ type Day10Part2 () =
 
         Assert.That(Day10Part2.run(input), Is.EqualTo(33))
 
-
-    // [<Test>]
-    // member _.GetParities() =
-
-    //     let expected = [|
-    //         ([|true; true; false; true|], 1); // 3 5 4 7
-    //         ([|true; false; false; true|], 2); // 1 2 2 3
-    //         ([|false; true; true; true|], 4) // 0 1 1 1
-    //     |]
-        
-    //     Assert.That(Day10Part2.getParities("{3,5,4,7}"), Is.EqualTo(expected))
-
+//  14615 is too low
