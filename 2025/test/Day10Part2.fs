@@ -38,5 +38,3 @@ type Day10Part2 () =
             ]
 
         Assert.That(Day10Part2.run(input), Is.EqualTo(33))
-
-//  14615 is too low

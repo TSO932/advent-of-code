@@ -66,16 +66,23 @@ module Day10Part2 =
                             let reduceJoltages(acc, combo) =
                                 (acc, combo)
                                 ||> Array.zip
-                                |> Array.map (fun (a, c) -> max 0 (a - if c then 1 else 0))
+                                |> Array.map (fun (a, c) -> a - if c then 1 else 0)
 
                             combos
                             |> Array.fold (fun acc combo -> reduceJoltages(acc, combo)) currentJoltages
                             |> Array.map (fun n -> n/2)
 
+                        let isNotNegative (viablePath) =
+                            viablePath
+                            |> fst
+                            |> Array.exists ((>) 0)
+                            |> not
+
                         let viablePaths =
                             buttonCombos
                             |> Array.filter (fun combo -> buttonComboXor[combo] = switches)
                             |> Array.map (fun combo -> (foldRemainingJoltages combo, Array.length combo))
+                            |> Array.filter isNotNegative
 
                         if Array.length viablePaths = 0 then
                             9999999
