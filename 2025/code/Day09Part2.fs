@@ -44,7 +44,7 @@ module Day09Part2 =
                 else
                     List.init (x1 - x2 + 1) (fun v -> (x2 + v, y1))
 
-        let init = ([], List.head compressedXY)
+        let init = ([], List.last compressedXY)
         
         let polygon =
             compressedXY
@@ -129,7 +129,7 @@ module Day09Part2 =
                         |> fun n -> n % 2 = 1    
 
                     cache.Add((x,y), inPolygon)
-                    inPolygon       
+                    inPolygon
 
         let squareInPolygon square =
 
@@ -165,8 +165,8 @@ module Day09Part2 =
         |> List.filter (fun (a, b) -> cornersInPolygon a b)
         |> List.map (fun (a, b) -> getSquare a b)
         |> List.filter squareInPolygon
-        // |> List.map getFilledSquare
-        // |> List.filter squareInPolygon
+        |> List.map getFilledSquare
+        |> List.filter squareInPolygon
         |> List.map convertBack
         |> List.map (fun ((x1, y1), (x2, y2)) -> ((1L + Math.Abs(x2 - x1)) * (1L + Math.Abs(y2 - y1))))
         |> List.max
