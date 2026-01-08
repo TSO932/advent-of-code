@@ -53,37 +53,16 @@ module Day09Part2 =
             |> List.distinct
 
         // removes cells which are in the middle of a horizonal line
+        // this approach doesn't work correctly
         let polygonWithBitsGone =
             polygon
-            |> List.filter (fun (x, y) -> not ((List.contains (x - 1, y) polygon) && (List.contains (x + 1, y) polygon)))
+            |> List.filter (fun (x, y) -> not (List.contains (x + 1, y) polygon))
 
         let getPairs(lst) =
             lst |> List.mapi (fun i a -> lst |> List.mapi (fun j b -> if i < j then [a; b] else []))
                 |> List.concat
                 |> List.filter (fun a -> List.length a = 2)
                 |> List.map (fun a -> a[0], a[1])
-
-        let getFilledSquare square =
-
-            let x1 = square |> List.map fst |> List.min
-            let x2 = square |> List.map fst |> List.max
-            let y1 = square |> List.map snd |> List.min
-            let y2 = square |> List.map snd |> List.max
-
-            let vert =
-                if y2 > y1 then
-                    List.init (y2 - y1 + 1) (fun v -> y1 + v)
-                        else
-                    List.init (y1 - y2 + 1) (fun v -> y2 + v)           
-            let horiz =
-                if x2 > x1 then
-                    List.init (x2 - x1 + 1) (fun v -> x1 + v)
-                else
-                    List.init (x1 - x2 + 1) (fun v -> x2 + v)
-
-            List.map (fun y -> List.map (fun x -> (x, y)) horiz) vert
-            |> List.concat
-
 
         let getSquare (x1, y1) (x2, y2) =
             
@@ -145,15 +124,6 @@ module Day09Part2 =
                 |> List.contains false
                 |> not
 
-        let cornersInPolygon (x1, y1) (x2, y2) =
-                pointInPolygon x1 y1
-                &&
-                pointInPolygon x2 y2
-                &&
-                pointInPolygon x1 y2
-                &&
-                pointInPolygon x2 y1
-
         let convertBack square =
             let x1 = square |> List.map fst |> List.min
             let x2 = square |> List.map fst |> List.max
@@ -162,15 +132,9 @@ module Day09Part2 =
             ((revX[x1], revY[y1]), (revX[x2], revY[y2]))
 
         getPairs compressedXY
-        |> List.filter (fun (a, b) -> cornersInPolygon a b)
         |> List.map (fun (a, b) -> getSquare a b)
-        |> List.filter squareInPolygon
-        |> List.map getFilledSquare
         |> List.filter squareInPolygon
         |> List.map convertBack
         |> List.map (fun ((x1, y1), (x2, y2)) -> ((1L + Math.Abs(x2 - x1)) * (1L + Math.Abs(y2 - y1))))
         |> List.max
 
-
-// 140762692 too low
-// 140762692 same answer with filled square included
