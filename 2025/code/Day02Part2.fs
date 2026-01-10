@@ -23,8 +23,7 @@ module Day02Part2 =
     let run(input) =
         input
         |> Day02Part1.parseLine
-        |> Seq.map Day02Part1.expandRange
-        |> Seq.concat
+        |> Seq.collect Day02Part1.expandRange
         |> Seq.filter isInvalid
         |> Seq.sum
 

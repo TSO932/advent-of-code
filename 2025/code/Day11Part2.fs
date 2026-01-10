@@ -19,8 +19,7 @@ module Day11Part2 =
 
             let newPositions =
                 positions
-                |> Seq.map (fun ((pos, fft, dac), qty) -> connections[pos] |> Seq.map (fun p -> ((p, fft || p = "fft", dac || p = "dac"), qty)))
-                |> Seq.concat
+                |> Seq.collect (fun ((pos, fft, dac), qty) -> connections[pos] |> Seq.map (fun p -> ((p, fft || p = "fft", dac || p = "dac"), qty)))
                 |> Seq.groupBy fst
                 |> Seq.map (fun (pos, grp) -> (pos, grp |> Seq.map snd |> Seq.sum))
                 |> Seq.filter (fun (pos, _) -> not (pos = ("out", false, true) || pos = ("out", true, false) || pos = ("out", false, false)))

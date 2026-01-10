@@ -28,8 +28,7 @@ module Day08Part1 =
     
         let nodes =
             pairs
-            |> Seq.map (fun (a, b) -> [a; b])
-            |> Seq.concat
+            |> Seq.collect (fun (a, b) -> [a; b])
             |> Seq.distinct
             |> Seq.toArray
 

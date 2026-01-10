@@ -23,26 +23,18 @@ module Day08Part2 =
 
         a.ToString() + "," + b.ToString() + c.ToString()
 
-    let getGroups(pairs:seq<string*string>) =
-    
+    let getGroups(pairs:(string*string)[]) =
+
         let nodes =
             pairs
-            |> Seq.map (fun (a, b) -> [a; b])
-            |> Seq.concat
-            |> Seq.distinct
-            |> Seq.toArray
+            |> Array.collect (fun (a, b) -> [| a; b |])
+            |> Array.distinct
 
-        let parent =
-            nodes
-            |> Seq.map (fun node -> (node, node))
-            |> dict
-            |> Dictionary
-        
-        let rank =
-            nodes
-            |> Seq.map (fun node -> (node, 0))
-            |> dict
-            |> Dictionary
+        let parent = Dictionary<string,string>()
+        let rank = Dictionary<string,int>()
+        for node in nodes do
+            parent.Add(node, node)
+            rank.Add(node, 0)
 
         let rec find (x:string) =
             if parent[x] <> x then
@@ -51,13 +43,9 @@ module Day08Part2 =
 
         let isOnlyOne() =
 
-            let firstOne =
-                parent.Values
-                |> Seq.head
-                |> find
-
-            parent.Values
-            |> Seq.exists  (fun node -> find node <> firstOne)
+            let firstOne = find nodes[0]
+            nodes
+            |> Array.exists (fun node -> find node <> firstOne)
             |> not
 
         let union (x:string, y:string) =
@@ -65,33 +53,31 @@ module Day08Part2 =
             let yRoot = find y
             if xRoot <> yRoot then
                 if rank[xRoot] < rank[yRoot] then
-                    parent.[xRoot] <- yRoot
+                    parent[xRoot] <- yRoot
                 elif rank[xRoot] > rank[yRoot] then
                     parent[yRoot] <- xRoot
                 else
                     parent[yRoot] <- xRoot
                     rank[xRoot] <- rank[xRoot] + 1
 
-        let rec unionise(ps:seq<string*string>) =
+        let rec unionise(ps:(string*string)[]) =
 
-            let pair = Seq.head ps
+            let pair = ps[0]
 
             union pair
 
             if isOnlyOne() then
                 let getX(coords:string) =
                     coords.Split ','
-                    |> Seq.head
-                    |> Int64.Parse
+                    |> fun a -> Int64.Parse a.[0]
 
                 getX(fst pair) * getX(snd pair)
             else
                 ps
-                |> Seq.tail
+                |> Array.tail
                 |> unionise
         
         unionise(pairs)
-
 
     let run(input:seq<string>) =
 
@@ -104,10 +90,10 @@ module Day08Part2 =
         |> Seq.map parseLine
         |> List.ofSeq
         |> getPairs
-        |> List.map (fun a -> (a[0], a[1]))
-        |> List.map (fun a -> (a, getDistance a))
+        |> List.map ( (fun a -> (a[0], a[1])) >> (fun a -> (a, getDistance a)) )
         |> List.sortBy snd        
         |> List.map (fun ((a, b), _) -> (backToText a, backToText b))
+        |> List.toArray
         |> getGroups
 
 

@@ -37,7 +37,7 @@ module Day10Part1 =
             else
                 let newOptions =
                     switchOptions
-                    |> Array.map (fun switchOption ->
+                    |> Array.collect (fun switchOption ->
                         
                         buttons
                         |> Array.map (fun button ->
@@ -46,7 +46,6 @@ module Day10Part1 =
                             |> Array.map (fun (s, b) -> (s || b) && not (s && b))
                         )
                     )
-                    |> Array.concat
                     |> Array.distinct
 
                 findSwitches(newOptions, buttons, idx + 1)

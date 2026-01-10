@@ -26,8 +26,7 @@ module Day10Part2 =
 
         let buttonCombinator(combos, button) =
             combos
-            |> Array.map (fun combo -> [| combo; Array.append combo [|button|] |])
-            |> Array.concat
+            |> Array.collect (fun combo -> [| combo; Array.append combo [|button|] |])
 
         let buttonCombos =
             parts[1 .. parts.Length - 2]
