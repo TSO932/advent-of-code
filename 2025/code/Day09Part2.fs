@@ -44,19 +44,17 @@ module Day09Part2 =
                 else
                     List.init (x1 - x2 + 1) (fun v -> (x2 + v, y1))
 
-        let init = ([], List.last compressedXY)
-        
         let polygon =
             compressedXY
-            |> List.fold (fun (edges, (x1, y1)) (x2, y2) -> (List.append edges (getEdge (x1, y1) (x2, y2)), (x2, y2))) init
+            |> List.fold (fun (edges, (x1, y1)) (x2, y2) -> (List.append edges (getEdge (x1, y1) (x2, y2)), (x2, y2))) ([], List.last compressedXY) 
             |> fst
             |> List.distinct
 
-        // removes cells which are in the middle of a horizonal line
-        // this approach doesn't work correctly
-        let polygonWithBitsGone =
-            polygon
-            |> List.filter (fun (x, y) -> not (List.contains (x + 1, y) polygon))
+        let edges =
+            compressedXY
+            |> List.scan (fun ((x1, y1), (x2, y2)) (x3, y3) -> ((x2, y2), (x3, y3))) ((0, 0), List.last compressedXY)
+            |> List.tail
+            |> List.filter (fun ((_, y1), (_, y2)) -> y1 <> y2) // exclude horizontal edges
 
         let getPairs(lst) =
             lst |> List.mapi (fun i a -> lst |> List.mapi (fun j b -> if i < j then [a; b] else []))
@@ -100,12 +98,32 @@ module Day09Part2 =
                     true
                 else
                     let inPolygon =
-                        polygonWithBitsGone
-                        |> List.filter (fun (_, y1) -> y1 = y)
-                        |> List.map fst
-                        |> List.filter (fun x1 -> x1 > x)
-                        |> List.length
-                        |> fun n -> n % 2 = 1    
+
+                        let middleXs =
+                            edges
+                            |> List.filter (fun ((_, y1), (_, y2)) -> not ( ((y < y1) && (y < y2)) || ((y > y1) && (y > y2)) ))  // not above or below
+                            |> List.map (fun ((x, _), _) -> x) // x1 = x2 because only considering vertical edges
+                            |> List.distinct
+                            |> List.sort
+
+                        // removes cells which are in the middle of a horizonal line
+                        let xs =
+                            middleXs
+                            |> List.filter (fun x -> not ((List.contains (x - 1) middleXs) && (List.contains (x + 1) middleXs)))
+
+                        let checkRight =
+                            xs
+                            |> List.filter (fun x1 -> x <= x1) // x1 = x2 because only considering vertical edges
+                            |> List.length
+                            |> fun n -> n % 2 = 1  
+
+                        let checkLeft =
+                            xs
+                            |> List.filter (fun x1 -> x > x1) // x1 = x2 because only considering vertical edges
+                            |> List.length
+                            |> fun n -> n % 2 = 1  
+
+                        checkLeft || checkRight
 
                     cache.Add((x,y), inPolygon)
                     inPolygon
