@@ -18,7 +18,7 @@ printfn "Day  7 Part 2: %i" (Day07Part2.run (File.ReadAllLines("../input/Day07/i
 printfn "Day  8 Part 1: %i" (Day08Part1.run (File.ReadAllLines("../input/Day08/input.txt")))
 // printfn "Day  8 Part 2: %i" (Day08Part2.run (File.ReadAllLines("../input/Day08/input.txt"))) // Takes about 30 mins to run
 printfn "Day  9 Part 1: %i" (Day09Part1.run (File.ReadAllLines("../input/Day09/input.txt")))
-printfn "Day  9 Part 2: %i" (Day09Part2.run (File.ReadAllLines("../input/Day09/input.txt")))
+// printfn "Day  9 Part 2: %i" (Day09Part2.run (File.ReadAllLines("../input/Day09/input.txt"))) // Takes several seconds to run
 printfn "Day 10 Part 1: %i" (Day10Part1.run (File.ReadAllLines("../input/Day10/input.txt")))
 // printfn "Day 10 Part 2: %i" (Day10Part2.run (File.ReadAllLines("../input/Day10/input.txt"))) // Takes several seconds to run
 printfn "Day 11 Part 1: %i" (Day11Part1.run (File.ReadAllLines("../input/Day11/input.txt")))

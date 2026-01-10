@@ -64,74 +64,67 @@ module Day09Part2 =
 
         let getSquare (x1, y1) (x2, y2) =
             
-            let vert =
-                if y2 > y1 then
-                    List.init (y2 - y1 + 1) (fun v -> y1 + v)
-                        else
-                    List.init (y1 - y2 + 1) (fun v -> y2 + v)           
-            let horiz =
-                if x2 > x1 then
-                    List.init (x2 - x1 + 1) (fun v -> x1 + v)
-                else
-                    List.init (x1 - x2 + 1) (fun v -> x2 + v)
+            let minX = min x1 x2
+            let maxX = max x1 x2
+            let minY = min y1 y2
+            let maxY = max y1 y2
 
-            let top = horiz |> List.map (fun x -> (x, y1))
-            let bottom = horiz |> List.map (fun x -> (x, y2))
-            let left = vert |> List.map (fun y -> (x1, y))
-            let right = vert |> List.map (fun y -> (x2, y))
+            let vert =  Array.init (maxY - minY + 1) (fun v -> minY + v) // incl. corner squares
+            let horiz = Array.init (max 0 (maxX - minX - 2)) (fun v -> minX + 1 + v) // excl. corner squares
+
+            let top = horiz |> Array.map (fun x -> (x, minY))
+            let bottom = horiz |> Array.map (fun x -> (x, maxY))
+            let left = vert |> Array.map (fun y -> (minX, y))
+            let right = vert |> Array.map (fun y -> (maxX, y))
             
             top
-            |> List.append bottom
-            |> List.append left
-            |> List.append right
-            |> List.distinct
+            |> Array.append bottom
+            |> Array.append left
+            |> Array.append right
 
         let maxX = Seq.length compressedX
         let cache = Dictionary<_,_>()
 
-        let pointInPolygon x y =
+        let pointOutsidePolygon x y =
             match cache.TryGetValue((x, y)) with
             | true, memorisedAnswer -> memorisedAnswer
             | _ -> 
 
                 if List.contains (x, y) polygon then
-                    true
+                    false
                 else
-                    let inPolygon =
+                    let notInPolygon =
                         polygonWithBitsGone
                         |> List.filter (fun (_, y1) -> y1 = y)
                         |> List.map fst
                         |> List.filter (fun x1 -> x1 > x)
                         |> List.length
-                        |> fun n -> n % 2 = 1    
+                        |> fun n -> n % 2 = 0    
 
-                    cache.Add((x,y), inPolygon)
-                    inPolygon
+                    cache.Add((x,y), notInPolygon)
+                    notInPolygon
 
         let squareInPolygon square =
 
             let sample =
-                List.randomChoices ((List.length square) / 10) square
+                Array.randomChoices ((Array.length square) / 10) square
 
             if sample
-                |> List.map (fun (x, y) -> pointInPolygon x y)
-                |> List.contains false then false
+                |> Array.exists (fun (x, y) -> pointOutsidePolygon x y) then false
             else
                 square
-                |> List.map (fun (x, y) -> pointInPolygon x y)
-                |> List.contains false
+                |> Array.exists (fun (x, y) -> pointOutsidePolygon x y)
                 |> not
 
         let convertBack square =
-            let x1 = square |> List.map fst |> List.min
-            let x2 = square |> List.map fst |> List.max
-            let y1 = square |> List.map snd |> List.min
-            let y2 = square |> List.map snd |> List.max
-            ((revX[x1], revY[y1]), (revX[x2], revY[y2]))
+            square
+            |> Array.fold (
+                fun ((minX, minY), (minx, maxY)) (x, y) ->
+                    ((min x minX, min y minY), (max x maxX, max y maxY))) ((99999999,9999999), (-1,-1))
+            |> fun ((x1, y1), (x2, y2)) -> ((revX[x1], revY[y1]), (revX[x2], revY[y2]))
 
         getPairs compressedXY
         |> List.map (fun (a, b) -> getSquare a b)
         |> List.filter squareInPolygon
-        |> List.map convertBack
-        |> List.map (fun ((x1, y1), (x2, y2)) -> ((1L + Math.Abs(x2 - x1)) * (1L + Math.Abs(y2 - y1))))
+        |> List.map (convertBack >> (fun ((x1, y1), (x2, y2)) -> ((1L + Math.Abs(x2 - x1)) * (1L + Math.Abs(y2 - y1)))))
         |> List.max
