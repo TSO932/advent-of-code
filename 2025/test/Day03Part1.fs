@@ -8,35 +8,35 @@ type Day03Part1 () =
 
     [<Test>]
     member _.GetFirstDigitExample1() =
-        Assert.That(Day03Part1.getFirstDigit "987654321111111", Is.EqualTo('9'))
+        Assert.That(Day03Part1.getFirstDigit "987654321111111", Is.EqualTo<char>('9'))
 
     [<Test>]
     member _.GetFirstDigitExample2() =
-        Assert.That(Day03Part1.getFirstDigit "811111111111119", Is.EqualTo('8'))
+        Assert.That(Day03Part1.getFirstDigit "811111111111119", Is.EqualTo<char>('8'))
 
     [<Test>]
     member _.GetFirstDigitExample3() =
-        Assert.That(Day03Part1.getFirstDigit "234234234234278", Is.EqualTo('7'))
+        Assert.That(Day03Part1.getFirstDigit "234234234234278", Is.EqualTo<char>('7'))
 
     [<Test>]
     member _.GetFirstDigitExample4() =
-        Assert.That(Day03Part1.getFirstDigit "818181911112111", Is.EqualTo('9'))
+        Assert.That(Day03Part1.getFirstDigit "818181911112111", Is.EqualTo<char>('9'))
 
     [<Test>]
     member _.getSecondDigitExample1() =
-        Assert.That(Day03Part1.getSecondDigit ("987654321111111", '9'), Is.EqualTo('8'))
+        Assert.That(Day03Part1.getSecondDigit ("987654321111111", '9'), Is.EqualTo<char>('8'))
 
     [<Test>]
     member _.getSecondDigitExample2() =
-        Assert.That(Day03Part1.getSecondDigit ("811111111111119", '8'), Is.EqualTo('9'))
+        Assert.That(Day03Part1.getSecondDigit ("811111111111119", '8'), Is.EqualTo<char>('9'))
 
     [<Test>]
     member _.getSecondDigitExample3() =
-        Assert.That(Day03Part1.getSecondDigit ("234234234234278", '7'), Is.EqualTo('8'))
+        Assert.That(Day03Part1.getSecondDigit ("234234234234278", '7'), Is.EqualTo<char>('8'))
 
     [<Test>]
     member _.getSecondDigitExample4() =
-        Assert.That(Day03Part1.getSecondDigit ("818181911112111", '9'), Is.EqualTo('2'))
+        Assert.That(Day03Part1.getSecondDigit ("818181911112111", '9'), Is.EqualTo<char>('2'))
 
     [<Test>]
     member _.Example1() =

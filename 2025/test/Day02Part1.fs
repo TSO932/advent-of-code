@@ -8,11 +8,11 @@ type Day02Part1 () =
 
     [<Test>]
     member _.ParseLine() =
-        Assert.That(Day02Part1.parseLine "11-22,95-115,998-1012,1188511880-1188511890", Is.EqualTo([[11L;22L];[95L;115L];[998L;1012L];[1188511880L;1188511890L]]))
+        Assert.That(Day02Part1.parseLine "11-22,95-115,998-1012,1188511880-1188511890", Is.EqualTo<list<int64>>([[11L;22L];[95L;115L];[998L;1012L];[1188511880L;1188511890L]]))
 
     [<Test>]
     member _.ExpandRange() =
-        Assert.That(Day02Part1.expandRange [11L;22L], Is.EqualTo([11L;12L;13L;14L;15L;16L;17L;18L;19L;20L;21L;22L]))
+        Assert.That(Day02Part1.expandRange [11L;22L], Is.EqualTo<seq<int64>>([11L;12L;13L;14L;15L;16L;17L;18L;19L;20L;21L;22L]))
     
     [<Test>]
     member _.IsValidisInvalidTrue() =
