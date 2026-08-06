@@ -1,0 +1,26 @@
+<!-- Directory.Build.targets -->
+<Project>
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <IsPackable>false</IsPackable>
+    <GenerateProgramFile>>false</GenerateProgramFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+    <PackageReference Include="NUnit.Analyzers" Version="4.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.2.0" />
+    <PackageReference Include="coverlet.collector" Version="10.0.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" Condition="'$(IsNUnit3TestProject)' == 'true'" />
+    <PackageReference Include="NUnit" Version="4.3.2"  Condition="'$(IsNUnit3TestProject)' != 'true'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <Compile Include="Day*Part*.fs" />
+    <Compile Include="Program.fs"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <ProjectReference Include="..\code\code.fsproj" />
+  </ItemGroup>
+</Project>
+

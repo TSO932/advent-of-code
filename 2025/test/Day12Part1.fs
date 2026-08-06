@@ -11,7 +11,8 @@ type Day12Part1() =
     // Don't worry about the shape of the presents or the shape of the region.
     // This doesn't work with the example data.
 
-    //[<Test>]
+    [<Test>]
+    [<Ignore("Known issue: The example data doesn't work with the simplification.")>]
     member _.Example() =
     
         let input = [

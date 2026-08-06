@@ -14,7 +14,7 @@ type Day03Part1 () =
     member _.getInstructions() =
         let input = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
         let expected = ["mul(2,4)"; "mul(5,5)"; "mul(11,8)"; "mul(8,5)"]
-        Assert.That(Day03Part1.getInstructions input, Is.EqualTo(expected))
+        Assert.That(Day03Part1.getInstructions input, Is.EqualTo<string seq>(expected))
 
     [<Test>]
     member _.getSum() =

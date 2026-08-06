@@ -7,3 +7,5 @@
 **/notebook
 *.Input
 .config
+**/coveragereport
+**/TestResults

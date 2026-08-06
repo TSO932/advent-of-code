@@ -59,4 +59,5 @@ type Day07Part1 () =
     member _.getSumOfSmallDirectories() = Assert.AreEqual(100445, Day07Part1.getSumOfSmallDirectories ([|("/", 247); ("d/a", 99); ("d", 99); ("e", 100000); ("f", 100001)|]))
 
     [<Test>]
+    [<Ignore("Missing input file")>]
     member _.example() = Assert.AreEqual(95437, Day07Part1.runProgram (File.ReadAllLines("../../../../input/Day07/test.txt")))

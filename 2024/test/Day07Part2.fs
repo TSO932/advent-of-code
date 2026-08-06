@@ -19,24 +19,24 @@ type Day07Part2 () =
 
     [<Test>]
     member _.Splitter5() =
-        let expected = (7290, [[[6]; [8]; [6]; [15]]; [[6]; [8]; [6; 15]]; [[6]; [8; 6]; [15]]; [[6]; [8; 6; 15]]; [[6; 8]; [6]; [15]]; [[6; 8]; [6; 15]]; [[6; 8; 6]; [15]]; [[6; 8; 6; 15]]])
+        let expected : int64 * (int64 seq seq seq) = (7290, [[[6]; [8]; [6]; [15]]; [[6]; [8]; [6; 15]]; [[6]; [8; 6]; [15]]; [[6]; [8; 6; 15]]; [[6; 8]; [6]; [15]]; [[6; 8]; [6; 15]]; [[6; 8; 6]; [15]]; [[6; 8; 6; 15]]])
         Assert.That(Day07Part2.splitter("7290: 6 8 6 15"), Is.EqualTo(expected))
 
     [<Test>]
     member _.peiceTogether1() =
         let input = seq {seq {seq {"10"}; seq {"19"}}; seq {seq {"10"; "19"}}}
-        let expected = seq {1019; 10; 19}
+        let expected = seq {1019L; 10L; 19L}
 
         let actual = Day07Part2.peiceTogether(input)
-        Assert.That(actual, Is.EqualTo(expected))
+        Assert.That(actual, Is.EqualTo<int64 seq>(expected))
 
     [<Test>]
     member _.peiceTogether2() =
         let input = seq {seq {seq {"81"}; seq {"40"}; seq {"27"}}; seq {seq {"81"}; seq {"40"; "27"}}; seq {seq {"81"; "40"}; seq {"27"}}; seq {seq {"81"; "40"; "27"}}}
-        let expected = seq {814027; 8140; 8127; 8127; 4027; 81; 40; 27}
+        let expected = seq {814027L; 8140L; 8127L; 8127L; 4027L; 81L; 40L; 27L}
 
         let actual = Day07Part2.peiceTogether(input)
-        Assert.That(actual, Is.EqualTo(expected))
+        Assert.That(actual, Is.EqualTo<int64 seq>(expected))
 
     // [<Test>]
     // member _.Example1() = Assert.That(Day07Part2.getValidValue("190: 10 19"), Is.EqualTo(190L))

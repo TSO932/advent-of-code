@@ -4,7 +4,7 @@ open NUnit.Framework
 open _2023
 
 [<TestFixture>]
-type Day25Part1() =
+type Day25Part1 () =
 
     [<DefaultValue>]
     val mutable exampleInput: seq<string>

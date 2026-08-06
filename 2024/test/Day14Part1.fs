@@ -15,22 +15,22 @@ type Day14Part1 () =
         this.b <- Day14Part1.Board(Day14Part1.BoardType.Test)
 
     [<Test>]
-    member _.ParseLine() = Assert.That(Day14Part1.parseLine("p=0,4 v=3,-3"), Is.EqualTo([|0; 4; 3; -3|]))
+    member _.ParseLine() = Assert.That(Day14Part1.parseLine("p=0,4 v=3,-3"), Is.EqualTo<int array>([|0; 4; 3; -3|]))
 
     [<Test>]
-    member this.Move1() = Assert.That(Day14Part1.move(this.b, [|2; 4; 2; -3|]), Is.EqualTo([|4; 1; 2; -3|]))
+    member this.Move1() = Assert.That(Day14Part1.move(this.b, [|2; 4; 2; -3|]), Is.EqualTo<int array>([|4; 1; 2; -3|]))
 
     [<Test>]
-    member this.Move2() = Assert.That(Day14Part1.move(this.b, [|4; 1; 2; -3|]), Is.EqualTo([|6; 5; 2; -3|]))
+    member this.Move2() = Assert.That(Day14Part1.move(this.b, [|4; 1; 2; -3|]), Is.EqualTo<int array>([|6; 5; 2; -3|]))
 
     [<Test>]
-    member this.Move3() = Assert.That(Day14Part1.move(this.b, [|6; 5; 2; -3|]), Is.EqualTo([|8; 2; 2; -3|]))
+    member this.Move3() = Assert.That(Day14Part1.move(this.b, [|6; 5; 2; -3|]), Is.EqualTo<int array>([|8; 2; 2; -3|]))
 
     [<Test>]
-    member this.Move4() = Assert.That(Day14Part1.move(this.b, [|8; 2; 2; -3|]), Is.EqualTo([|10; 6; 2; -3|]))
+    member this.Move4() = Assert.That(Day14Part1.move(this.b, [|8; 2; 2; -3|]), Is.EqualTo<int array>([|10; 6; 2; -3|]))
 
     [<Test>]
-    member this.Move5() = Assert.That(Day14Part1.move(this.b, [|10; 6; 2; -3|]), Is.EqualTo([|1; 3; 2; -3|]))
+    member this.Move5() = Assert.That(Day14Part1.move(this.b, [|10; 6; 2; -3|]), Is.EqualTo<int array>([|1; 3; 2; -3|]))
 
     [<Test>]
     member this.AssignQuadrantXV() = Assert.That(Day14Part1.assignQuadrant(this.b, [|1; 3; 1; 1|]), Is.EqualTo("X"))
