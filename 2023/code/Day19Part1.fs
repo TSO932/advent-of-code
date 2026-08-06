@@ -798,4 +798,4 @@ module Day19Part1 =
         accepted
 
     let count(input:seq<string>) =
-        countAccepted (input, in2)
+        countAccepted (input |> Seq.filter (fun s -> s.Contains '='), in2)
