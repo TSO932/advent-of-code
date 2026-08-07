@@ -8,5 +8,4 @@ open AoC2022
 type Day07Part2 () =
 
     [<Test>]
-    [<Ignore("Missing input file")>]
-    member _.example() = Assert.AreEqual(24933642, Day07Part2.runProgram (File.ReadAllLines("../../../../input/Day07/test.txt")))
+    member _.example() = Assert.AreEqual(24933642, Day07Part2.runProgram (File.ReadAllLines("../../../input_day07.txt")))
