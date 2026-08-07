@@ -11,19 +11,19 @@ type Day22Part1 () =
     [<Test>]
     member this.ReadCards() = 
         let actual = Day22Part1.readCards (seq {"a"; "b"; "00"; "88"; "77"; "qq"; ""; "ee"; "999"; "0"; "!"; "4"; "42"; "99"})
-        printfn "%A" actual
+        // printfn "%A" actual
         Assert.AreEqual([|[88; 77; 999]; [4; 42; 99]|], actual)
 
     [<Test>]
     member this.PlayRoundLose() = 
         let actual = Day22Part1.playRound ([|[1; 2; 3]; [4; 5; 6]|])
-        printfn "%A" actual
+        // printfn "%A" actual
         Assert.AreEqual([|[2; 3]; [5; 6; 4; 1]|], actual)
 
     [<Test>]
     member this.PlayRoundWin() = 
         let actual = Day22Part1.playRound ([|[9; 2; 3]; [4; 5; 6]|])
-        printfn "%A" actual
+        // printfn "%A" actual
         Assert.AreEqual([|[2; 3; 9; 4]; [5; 6]|], actual)
 
     //No rule for a draw is specified.

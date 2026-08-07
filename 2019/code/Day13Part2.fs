@@ -40,13 +40,17 @@ module Day13Part2 =
                                                 | 4L -> "o"
                                                 | _  -> "E"
                                     | None -> " "
-                    printf "%s"tile
-                printfn ""
-            printfn "score %i block remaining %i"
-                (match locations.TryFind (-1, 0) with
+                    if not autoPlay then printf "%s"tile
+                if not autoPlay then printfn ""
+            
+            let score = 
+                match locations.TryFind (-1, 0) with
                     | Some x -> x
-                    | None -> 0L)
-                (locations |> Map.filter (fun _ value -> value = 2L) |> Map.count)
+                    | None -> 0L
+            
+            if not autoPlay then printfn "score %i block remaining %i" score (locations |> Map.filter (fun _ value -> value = 2L) |> Map.count)
+
+            score
 
         while intcode.[index] <> 99L && locations.Count < 10000 do
 
@@ -86,7 +90,7 @@ module Day13Part2 =
                 if autoPlay then
                     inputValue <- int64 (ball.CompareTo bat)
                 else
-                    printOutput()
+                    printOutput() |> ignore
                     printfn "Enter Instruction: L, R or other"
                     inputValue <- match System.Console.ReadLine() with
                                     | "L" | "l" | "left"  | "LEFT"  | "Left"  | "-1" -> -1L

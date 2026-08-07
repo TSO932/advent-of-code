@@ -4,7 +4,7 @@ module Day09Part1 =
     let runProgram (inputString:string, inputVals:int64 array) =
 
         let isDebug = false
-        let isShowAllOutputs = true
+        let isShowAllOutputs = false
         
         let intcodes = inputVals |> Array.map (fun s -> Array.concat [|inputString.Split ',' |> Array.map System.Int64.Parse; (Array.zeroCreate 1000)|]) 
         let inputValues = inputVals |> Array.map (fun x -> [|x|])

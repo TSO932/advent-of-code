@@ -1,54 +1,31 @@
 namespace AoC2019
 
+open System.Text
+
 module Day11Part2 =
     let isDebug = false
-    let isPartOne = true
 
     let printOutput(locationsPainted) =
+
+        let mutable printLines = Seq.empty
         let locationsToPlot = locationsPainted |> Map.toSeq |> Seq.map fst
         let minX = locationsToPlot |> Seq.minBy fst |> fst
         let maxX = locationsToPlot |> Seq.maxBy fst |> fst
         let minY = locationsToPlot |> Seq.minBy snd |> snd
         let maxY = locationsToPlot |> Seq.maxBy snd |> snd
         for j = minY to maxY do
+            let printLine = StringBuilder("")
             for i = minX to maxX do
                 let colour = match locationsPainted.TryFind ((i, j)) with
-                                | Some x -> if x = 1L then "#" else " "
-                                | None -> " "
-                printf "%s"colour
+                                | Some 1L -> "#"
+                                | _ -> " "
+                printLine.Append(colour) |> ignore
             
-            printfn ""
+            printLines <- Seq.append printLines [yield printLine.ToString()]
+        
+        if isDebug then printfn  "all %i white %i" locationsPainted.Count (locationsPainted |> Map.filter (fun _ v -> v = 1L) |> Map.count)
 
-        printfn  "all %i white %i" locationsPainted.Count (locationsPainted |> Map.filter (fun _ v -> v = 1L) |> Map.count)
-
-    let runTestProgram =
-        let instructions = [(1L,1) ; (0L,0) ; (0L,0) ; (1L,1) ; (1L,1) ; (0L,0) ; (0L,0) ; (1L,1) ; (1L,1) ; (0L,1) ; (1L,0) ; (0L,1) ; (1L,0) ; (0L,1) ; (1L,0) ; (0L,0) ; (1L,1) ; (0L,0) ; (1L,1) ; (0L,0) ; (1L,1)  ; (0L,1) ; (0L,1) ; (1L,0) ; (1L,1) ; (0L,0) ; (0L,0) ; (1L,1) ; (1L,0) ; (0L,1) ; (0L,0); (0L,0); (1L,1) ; (0L,0); (0L,0); (1L,1); (1L,1); (0L,0); (0L,0); (1L,1); (1L,1); (0L,1) ; (1L,0); (0L,1) ; (1L,0); (0L,1) ; (1L,0); (0L,1) ; (1L,0); (0L,0); (0L,0);(1L,1);(1L,1);(0L,0); (0L,0);(1L,1);(1L,1)]
-        let mutable currentLocation = ((0, 0), 0)
-        let mutable locationsPainted = Map.empty
-
-        for instruction in instructions do
-            locationsPainted <- locationsPainted |> Map.add (fst currentLocation) (fst instruction)
-            currentLocation <- Day11Part1.rotate(currentLocation, snd instruction)
-
-        printOutput(locationsPainted)
-
-
-    let runExampleProgram =
-    
-        let instructions = [1L;0L;0L;0L;1L;0L;1L;0L;0L;1L;1L;0L;1L;0L]
-        let mutable isPaintOutput = true
-        let mutable currentLocation = ((0, 0), 0)
-        let mutable locationsPainted = Map.empty
-
-        for outputValue in instructions do
-            if isPaintOutput then          
-                locationsPainted <- locationsPainted |> Map.add (fst currentLocation) outputValue
-            else
-                currentLocation <- Day11Part1.rotate(currentLocation, int outputValue)
-
-            isPaintOutput <- not isPaintOutput
-
-        printOutput(locationsPainted)
+        printLines
 
     let runProgram (inputString:string, isPartOne) =
 
@@ -138,6 +115,14 @@ module Day11Part2 =
 
         if isDebug then printfn "Relative Base %i" relativeBase
 
-        if not isPartOne then printOutput(locationsPainted)
+        locationsPainted
    
+    let runProgram1 (inputString:string) =
+
+        let locationsPainted = runProgram (inputString, true)
         locationsPainted.Count
+
+    let runProgram2 (inputString:string) =
+
+        let locationsPainted = runProgram (inputString, false)
+        printOutput(locationsPainted)

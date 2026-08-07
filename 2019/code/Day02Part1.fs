@@ -1,8 +1,12 @@
 namespace AoC2019
 
 module Day02Part1 =
-    let runProgram (inputString:string) =
+    let runProgramInternal (inputString:string, isReset) =
         let intcode = inputString.Split ',' |> Array.map System.Int32.Parse
+
+        if isReset then
+            intcode.[1] <- 12
+            intcode.[2] <- 2
 
         let mutable index = 0
 
@@ -16,5 +20,8 @@ module Day02Part1 =
         
         intcode
 
+    let runProgram (inputString:string) = runProgramInternal (inputString, true)
+    let testProgram (inputString:string) = runProgramInternal (inputString, false)
+
     let getFirstIntCode inputString =
-        (runProgram inputString).[0] 
+        (runProgram inputString).[0]
