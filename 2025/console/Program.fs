@@ -2,11 +2,12 @@
 open _2025
 
 let readInput day = AoC.Input.readLines 2025 day
+let readInputLine day = (readInput day)[0]
 
 printfn "Day  1 Part 1: %i" (Day01Part1.run (readInput 1))
 printfn "Day  1 Part 2: %i" (Day01Part2.run (readInput 1))
-printfn "Day  2 Part 1: %i" (Day02Part1.run ((readInput 2).[0]))
-printfn "Day  2 Part 2: %i" (Day02Part2.run ((readInput 2).[0]))
+printfn "Day  2 Part 1: %i" (Day02Part1.run (readInputLine 2))
+printfn "Day  2 Part 2: %i" (Day02Part2.run (readInputLine 2))
 printfn "Day  3 Part 1: %i" (Day03Part1.run (readInput 3))
 printfn "Day  3 Part 2: %i" (Day03Part2.run (readInput 3))
 printfn "Day  4 Part 1: %i" (Day04Part1.run (readInput 4))

@@ -1,7 +1,8 @@
-﻿open AoC
+﻿open AoC.Input
 open _2023
 
 let readInput day = AoC.Input.readLines 2023 day
+let readInputLine day = (readInput day)[0]
 
 printfn "Day  1 Part 1: %i" (Day01Part1.calibrate (readInput 1))
 printfn "Day  1 Part 2: %i" (Day01Part2.calibrate (readInput 1))
@@ -24,8 +25,8 @@ printfn "Day  9 Part 2: %i" (Day09Part2.getSum (readInput 9))
 printfn "Day 13 Part 1: %i" (Day13Part1.getSum (readInput 13))
 printfn "Day 13 Part 2: %i" (Day13Part2.getSum (readInput 13))
 printfn "Day 14 Part 1: %i" (Day14Part1.getSum (readInput 14))
-printfn "Day 15 Part 1: %i" (Day15Part1.getSum ((readInput 15).[0]))
-printfn "Day 15 Part 2: %i" (Day15Part2.getSum ((readInput 15).[0]))
+printfn "Day 15 Part 1: %i" (Day15Part1.getSum (readInputLine 15))
+printfn "Day 15 Part 2: %i" (Day15Part2.getSum (readInputLine 15))
 // printfn "Day 16 Part 1: %A" (Day16Part1.countTiles (readInput 16))
 // printfn "Day 16 Part 2: %A" (Day16Part2.countTiles (readInput 16))
 printfn "Day 18 Part 1: %i" (Day18Part1.getArea (readInput 18))
