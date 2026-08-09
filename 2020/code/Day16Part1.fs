@@ -1,7 +1,7 @@
 namespace AoC2020
 
 module Day16Part1 =
-    type Rule = { IsDeparture: bool; Ranges: seq<int * int> }
+    type Rule = { IsDeparture: bool; Ranges: seq<int64 * int64> }
 
     let splitBlocks inputLines =
         match inputLines |> CommonFunctions.splitByBlankLine with
@@ -11,7 +11,7 @@ module Day16Part1 =
     let parseRange (range:string) =
         match range.Split('-') with
         | [| low; high |] ->
-            match System.Int32.TryParse low, System.Int32.TryParse high with
+            match System.Int64.TryParse low, System.Int64.TryParse high with
             | (true, lowValue), (true, highValue) -> lowValue, highValue
             | _ -> failwith "Expected numeric values."
         | _ -> failwith "Expected hyphen-seperated pairs of values."
@@ -25,12 +25,6 @@ module Day16Part1 =
 
     let parseValidityRules inputLines =
         inputLines |> Seq.map parseValidityRule
-
-    let parseMyTicket (inputLines:string seq) =
-        inputLines
-        |> Seq.exactlyOne
-        |> fun line -> line.Split(',')
-        |> Seq.map int
 
     let isValidValue ruleSet n =
         ruleSet |> Seq.exists (fun (nmin, nmax) -> n >= nmin && n <= nmax)
@@ -50,6 +44,6 @@ module Day16Part1 =
 
         let ticketValues =
             tickets
-            |> Seq.collect (fun ticket -> ticket.Split(',') |> Seq.map int)
+            |> Seq.collect (fun ticket -> ticket.Split(',') |> Seq.map int64)
 
         errorRate ticketValues ruleSet

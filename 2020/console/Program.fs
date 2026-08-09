@@ -58,7 +58,8 @@ let main argv =
     // printfn "Day 15 Part 2 Elapsed Milliseconds: %f " (PerformanceMeasure.measurePerformance(Day15Part2.playMemoryGame, startingNumbers))
     
     printfn "Day 16 Part 1: %i" (Day16Part1.sumErrors (readInput 16))
-    
+    printfn "Day 16 Part 2: %i" (Day16Part2.calculate (readInput 16))
+
     // printfn "Day 17 Part 1: %i" (Day17Part1.countActiveCells(readInput 17))
     // printfn "Day 17 Part 2: %i" (Day17Part2.countActiveCells(readInput 17))
 
