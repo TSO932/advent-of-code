@@ -1,9 +1,9 @@
 namespace AoC2020.Tests
 
+open System
 open System.IO
 open NUnit.Framework
 open AoC2020
-open System
 
 [<TestFixture>] 
 type Day14Part2 () =
