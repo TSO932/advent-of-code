@@ -49,6 +49,8 @@ let main argv =
     // printfn "Day 12 Part 1: %i" (Day12Part1.navigate(readInput 12))
     // printfn "Day 12 Part 2: %i" (Day12Part2.navigate(readInput 12))
 
+    printfn "Day 13 Part 1: %i" (Day13Part1.nextBus(readInput 13))
+
     // printfn "Day 14 Part 1: %i" (Day14Part1.initializeFerryDockingProgram(readInput 14))
     // printfn "Day 14 Part 2: %i" (Day14Part2.initializeFerryDockingProgram(readInput 14))
 
