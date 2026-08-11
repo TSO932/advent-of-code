@@ -39,5 +39,7 @@ module Day23Part1 =
         else
             play(itterations - 1, rotateCircleByOne(cutAndShunt(cupCircle)))
 
-    let playGame (inputData:seq<string>) =
-        play(100, getCircleOfCups((Array.ofSeq inputData).[0]))
+    let playGame (inputData:string) =
+        play(100, getCircleOfCups(inputData))
+        |> Array.fold (fun acc digit -> acc * 10 + digit) 0
+        |> fun x -> x / 10

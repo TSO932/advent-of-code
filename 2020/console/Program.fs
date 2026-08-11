@@ -4,6 +4,7 @@ open AoC2020
 let main argv =
 
     let readInput day = AoC.Input.readLines 2020 day
+    let readInputLine day = (readInput day)[0]
 
     // printfn "Day  1 Part 1: %i" (Day01Part1.fixExpenses (readInput 01))
     // printfn "Day  1 Part 2: %i" (Day01Part2.fixExpenses (readInput 01))
@@ -81,8 +82,8 @@ let main argv =
     // printfn "Day 22 Part 1: %i" (Day22Part1.playCombat(readInput 22))
     // printfn "Day 22 Part 2: %i" (Day22Part2.playCombat(readInput 22))
 
-    // printfn "Day 23 Part 1: %A" (Day23Part1.playGame(readInput 23))
-    // printfn "Day 23 Part 2: %A" (Day23Part2.playGame(readInput 23))
+    printfn "Day 23 Part 1: %A" (Day23Part1.playGame(readInputLine 23))
+    printfn "Day 23 Part 2: %A" (Day23Part2.playGame(readInputLine 23))
     // printfn "Day 23 Part 2 Elapsed Milliseconds: %f " (PerformanceMeasure.measurePerformance(Day23Part2.playGame, readInput 23))
 
     // printfn "Day 24 Part 1: %i" (Day24Part1.countTiles(readInput 24))

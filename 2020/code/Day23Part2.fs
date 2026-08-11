@@ -5,56 +5,70 @@ open System.Collections.Generic
 
 module Day23Part2 =
 
-    let rotateCircle(currentPosition:int, cupCircle:int[]) = 
-        Array.append cupCircle.[currentPosition..(cupCircle.Length - 1)] cupCircle.[0..(currentPosition - 1)] 
+    let rotateCircle (currentPosition:int64) (cupCircle:int64[]) =
+        let idx = int currentPosition
+        Array.append cupCircle.[idx..(cupCircle.Length - 1)]
+                     cupCircle.[0..(idx - 1)]
 
-    let rotateCircleByOne(cupCircle:int[]) = rotateCircle(1, cupCircle) 
+    let rotateCircleByOne (cupCircle:int64[]) = rotateCircle 1L cupCircle
 
-    let getCircleOfCups(cupString:string) =
-        let start = cupString |> Array.ofSeq |> Array.map (string >> int)
-        let circle = Array.append start (seq {(start.Length + 1)..1000000} |> Array.ofSeq)
+    let play (inputData:string) =
 
-        let rotatedCircle = rotateCircleByOne(circle) 
-        let cupMap = new Dictionary<int, int>()
-        circle |> Array.iteri (fun i x -> cupMap.Add(x, rotatedCircle.[i]))
+        let start = inputData |> Array.ofSeq |> Array.map (string >> int64)
+        let circle = Array.append start (seq { (int64 start.Length + 1L) .. 1000000L } |> Array.ofSeq)
+        let rotatedCircle = rotateCircleByOne circle
 
-        circle
+        let cupMap = Dictionary<int64,int64>()
+        let cupMapBack = Dictionary<int64,int64>()
 
-    let getDestinationPosition(cupCircle:int[]) =
+        let populateArray x rotX =
+            cupMap.Add(x, rotX)
+            cupMapBack.Add(rotX, x)
 
-        let circleWithoutCupsToMove = Array.append cupCircle.[0..0] cupCircle.[4..(cupCircle.Length - 1)]
-        
-        let lowerValuesOrWrap =
-            let lowerValues = circleWithoutCupsToMove |> Array.filter ((>) cupCircle.[0])
-            if Array.isEmpty lowerValues then circleWithoutCupsToMove else lowerValues
-         
-        Array.IndexOf(circleWithoutCupsToMove, lowerValuesOrWrap |> Array.maxBy (id)) + 3
+        (circle, rotatedCircle) ||> Array.iter2 populateArray
 
-    let cutAndShunt(cupCircle:int[]) =
-        let destinationPosition = getDestinationPosition(cupCircle)
+        let currentPosition = Seq.head start
+        let minLabel = Seq.min circle
+        let maxLabel = Seq.max circle
 
-        Array.append
-            (Array.append
-                (Array.append
-                    cupCircle.[0..0]
-                    cupCircle.[4..destinationPosition])
-                    cupCircle.[1..3])
-                    cupCircle.[(destinationPosition + 1)..(cupCircle.Length - 1)]
+        let rec playRound (iterations:int) (currentPosition:int64) =
 
-    let rec play(itterations:int, cupCircle:int[]) =
-        if itterations = 0 then
-            let positionOfOne = Array.IndexOf(cupCircle, 1)
-            let findPosition(relativePosition:int) =
-                let newPosition = positionOfOne + relativePosition
-                if newPosition < cupCircle.Length then
-                    newPosition
-                else
-                    newPosition - cupCircle.Length 
+            if iterations = 0 then
+                let netCup = cupMap[1L]
+                netCup * (cupMap[netCup])
+            else
+                let nextCup1 = cupMap[currentPosition]
+                let nextCup2 = cupMap[nextCup1]
+                let nextCup3 = cupMap[nextCup2]
+                let nextCup4 = cupMap[nextCup3]
+                cupMap[currentPosition] <- nextCup4
+                cupMapBack[nextCup4] <- currentPosition
 
-            int64(cupCircle.[findPosition(1)]) * int64(cupCircle.[findPosition(2)]) 
-        else
-            play(itterations - 1, rotateCircleByOne(cutAndShunt(cupCircle)))
+                let rec getDestinationPosition cup =
 
-    let playGame (inputData:seq<string>) =
-        // play(10000000, getCircleOfCups((Array.ofSeq inputData).[0]))
-        play(10000, getCircleOfCups((Array.ofSeq inputData).[0]))
+                    let c = cup - 1L
+                
+                    let candidate =
+                        if c < minLabel then
+                            maxLabel
+                        else
+                            c
+
+                    if  candidate = nextCup1 || candidate = nextCup2 || candidate = nextCup3 then
+                        getDestinationPosition candidate
+                    else
+                        candidate
+
+                let destinationCup = getDestinationPosition currentPosition
+                let afterDest = cupMap[destinationCup]
+
+                cupMap[destinationCup] <- nextCup1
+                cupMap[nextCup3] <- afterDest
+                cupMapBack[nextCup1] <- destinationCup
+                cupMapBack[afterDest] <- nextCup3
+
+                playRound (iterations - 1) cupMap[currentPosition]
+
+        playRound 10000000 currentPosition
+
+    let playGame (inputData:string) = play inputData
