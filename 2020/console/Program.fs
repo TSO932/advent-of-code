@@ -73,7 +73,8 @@ let main argv =
     // printfn "Day 19 Part 1: %i" (Day19Part1.countValidMessages(readInput 19))
     // printfn "Day 19 Part 2: %i" (Day19Part2.countValidMessages(readInput 19))   
 
-    // printfn "Day 20 Part 1: %i" (Day20Part1.findCorners(readInput 20))
+    printfn "Day 20 Part 1: %i" (Day20Part1.findCorners(readInput 20))
+    printfn "Day 20 Part 2: %i" (Day20Part2.calculateSeaRoughness(readInput 20))
     // printfn "Day 20 Part 1 Elapsed Milliseconds: %f " (PerformanceMeasure.measurePerformance(Day20Part1.findCorners, readInput 20))
 
     printfn "Day 21 Part 1: %i" (Day21Part1.countSafeIngredients (readInput 21))
