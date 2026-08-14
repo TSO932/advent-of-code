@@ -45,6 +45,24 @@ module Day20Part2 =
     let rotateClockAndflipHoriz (tile: char[,]) : char[,] =
         tile |> rotateClockwise |> flipHorizontal
 
+    let orientations (grid: char[,]) =
+        let r1 = rotateClockwise grid
+        let r2 = rotateClockwise r1
+        let r3 = rotateClockwise r2
+        let flipped = flipVertical grid
+        let f1 = rotateClockwise flipped
+        let f2 = rotateClockwise f1
+        let f3 = rotateClockwise f2
+        [ grid; r1; r2; r3; flipped; f1; f2; f3 ]
+
+    let getEdgesSeq (pixel: char[,]) =
+            seq {
+                pixel.[0, 0..9]
+                pixel.[9, 0..9]
+                pixel.[0..9, 0]
+                pixel.[0..9, 9]
+            }
+
     let calculateSeaRoughness (pixels: seq<string>) =
 
         // Section 1 - Parse Data
@@ -63,12 +81,7 @@ module Day20Part2 =
                 (tileId, grid))
 
         let getEdges (pixel: char[,]) =
-            let edges = seq {
-                pixel.[0, 0..9]
-                pixel.[9, 0..9]
-                pixel.[0..9, 0]
-                pixel.[0..9, 9]
-            }
+            let edges = getEdgesSeq pixel
             Seq.concat (seq { edges; edges |> Seq.map (Array.rev) })
             |> Seq.map System.String.Concat
 
@@ -101,7 +114,7 @@ module Day20Part2 =
 
         let allTiles = unselectedTiles |> Seq.toList
 
-        let links = Dictionary<int64, int64>()
+        let mutable linksList = []
 
         let rec ringPath startSquare =
 
@@ -140,7 +153,7 @@ module Day20Part2 =
                 removeNeighbours outerRing
                 removeNeighbours unselectedTiles
 
-                links.Add(tileA, tileB)
+                linksList <- (tileA, tileB) :: linksList
 
             addLink startSquare secondSquare
 
@@ -159,11 +172,7 @@ module Day20Part2 =
 
             nextTile secondSquare
 
-            let lastTile =
-                links
-                |> Seq.rev
-                |> Seq.head
-                |> fun (KeyValue(_, next)) -> next
+            let lastTile = snd (List.head linksList)
 
             let nextNeighbour =
                 allTiles
@@ -175,7 +184,7 @@ module Day20Part2 =
             match nextNeighbour with
             | Some t ->
                 if unselectedTiles.Count = 1 then
-                    links.Add(lastTile, t)
+                    linksList <- (lastTile, t) :: linksList
                 else
                     ringPath t
             | None -> ()
@@ -185,38 +194,68 @@ module Day20Part2 =
             |> Seq.filter (fun tile -> Seq.length tile.Value = 2)
             |> Seq.map (fun tile -> tile.Key)
             |> Seq.head
-     
+
+        let startNeighbours = unselectedTiles.GetValueOrDefault(startSquare)
+
         ringPath startSquare
-        
-    // Section 4 - Place tiles on grid
+
+        let linksMap = Map.ofList linksList
+
+        // Section 4 - Place tiles on grid
 
         let numberRows = sqrt (float (Seq.length parsedTiles)) |> int
-        let fullSize = 8 * (2 * numberRows - 1) //80 
-        let startPosition = 8 * (numberRows - 1) //50
-        let fullArray = Array2D.create<char> fullSize fullSize '_'
+        let fullSize = 8 * (2 * numberRows - 1)
+        let startPosition = 8 * (numberRows - 1)
+        let emptyArray = Array2D.create<char> fullSize fullSize '_'
 
-        let addTile r c (title: char[,]) =
-            for row in 1 .. 8 do
-                for col in 1 .. 8 do
-                    fullArray.[r + row - 1, c + col - 1] <- title.[row, col]
+        let addTile r c (tile: char[,]) (currentGrid: char[,]) =
+            let grid = Array2D.copy currentGrid
+            for i in 1 .. 8 do
+                for j in 1 .. 8 do
+                    grid.[r + i - 1, c + j - 1] <- tile.[i, j]
+            grid
 
-        let startGrid = 
-            parsedTiles
-            |> Seq.find (fun (tileId, _) -> tileId = startSquare)
-            |> snd
+        // --- FIX: Correctly orient the start square before placement ---
+        let getTileGrid tileId =
+            parsedTiles |> Seq.find (fun (id, _) -> id = tileId) |> snd
 
-        addTile startPosition startPosition startGrid
+        let rawStartGrid = getTileGrid startSquare
 
-        let rec placeNextTile y x currentTile currGridFlipped =
+        let neighbor1Grid = getTileGrid startNeighbours.[0]
+        let neighbor2Grid = getTileGrid startNeighbours.[1]
 
-            if links.Count = 0 then
-                ()
-            else
-                let nextTile = links[currentTile]
-                links.Remove currentTile |> ignore
+        let getEdges (pixel: char[,]) =
+            pixel |> getEdgesSeq |> Seq.map System.String.Concat |> Set.ofSeq
+
+        let n1Edges = getEdges neighbor1Grid
+        let n2Edges = getEdges neighbor2Grid
+
+        let isEdgeMatched (edge: char[]) =
+            let s = System.String.Concat edge
+            let revS = System.String.Concat (Array.rev edge)
+            Set.contains s n1Edges || Set.contains revS n1Edges ||
+            Set.contains s n2Edges || Set.contains revS n2Edges
+
+        let orientCorner (tile: char[,]) =
+            tile
+            |> orientations
+            |> List.find (fun g ->
+                // Orient so the 2 matching edges point RIGHT (column 9) and BOTTOM (row 9)
+                isEdgeMatched g.[9, *] && isEdgeMatched g.[*, 9])
+
+        let startGrid = orientCorner rawStartGrid
+        // -----------------------------------------------------------------
+
+        let initialFullArray = addTile startPosition startPosition startGrid emptyArray
+// <<<< END REPLACE >>>>
+
+        let rec placeNextTile y x currentTile currGridFlipped currentFullArray remainingLinks =
+            match Map.tryFind currentTile remainingLinks with
+            | None -> currentFullArray
+            | Some nextTile ->
+                let updatedLinks = Map.remove currentTile remainingLinks
 
                 let getEdge (face: Face) (direction: Direction) (tile: char[,]) =
-
                     let edge = 
                         match direction with
                         | Left   -> tile.[*, 0]
@@ -225,8 +264,8 @@ module Day20Part2 =
                         | Bottom -> tile.[9, *]
 
                     match face with
-                        | Obverse -> edge
-                        | Reverse -> Array.rev edge
+                    | Obverse -> edge
+                    | Reverse -> Array.rev edge
 
                 let allDirections = seq { Direction.Left; Direction.Right; Direction.Top; Direction.Bottom }
                 let bothFaces = seq { Face.Obverse; Face.Reverse }
@@ -283,16 +322,15 @@ module Day20Part2 =
                     | (Direction.Top, _, _), (Direction.Top, _, _) -> (y - 8, x, flipVertical faceGrid)
                     | (Direction.Top, _, _), (Direction.Bottom, _, _) -> (y - 8, x, faceGrid)
 
-                addTile yNew xNew flippedTile
+                let nextFullArray = addTile yNew xNew flippedTile currentFullArray
                 
-                placeNextTile yNew xNew nextTile flippedTile
+                placeNextTile yNew xNew nextTile flippedTile nextFullArray updatedLinks
 
-        placeNextTile startPosition startPosition startSquare startGrid
-       
-        // Section 5 - Trim grid and remove tile boarders
+        let fullArray = placeNextTile startPosition startPosition startSquare startGrid initialFullArray linksMap
+
+        // Section 5 - Trim grid and remove tile borders
 
         let cropGrid (grid: char[,]) : char[,] =
-
             let points = seq {
                 for r in 0 .. (Array2D.length1 grid) - 1 do
                     for c in 0 .. (Array2D.length2 grid) - 1 do
@@ -307,40 +345,42 @@ module Day20Part2 =
 
             grid.[minR .. maxR, minC .. maxC]   
             
-        // Section 6 - Count Sea Monsters
+        // Section 6 - Count Sea Monsters & Calculate Sea Roughness
 
-        let countMonsters (grid: char[,]) : int =
-            seq {
-                for r in 0 .. (Array2D.length1 grid) - 3 do
-                    for c in 0 .. (Array2D.length2 grid) - 20 do
-                        if isSeaMonster grid[r .. r + 2, c .. c + 19] then
-                            yield ()
-            }
+        let monsterCoords = [
+            (0, 18)
+            (1, 0); (1, 5); (1, 6); (1, 11); (1, 12); (1, 17); (1, 18); (1, 19)
+            (2, 1); (2, 4); (2, 7); (2, 10); (2, 13); (2, 16)
+        ]
+
+        let markMonsters (grid: char[,]) : (char[,] * int) =
+            let g = Array2D.copy grid
+            let rows = Array2D.length1 g
+            let cols = Array2D.length2 g
+            let mutable count = 0
+            
+            for r in 0 .. rows - 3 do
+                for c in 0 .. cols - 20 do
+                    if monsterCoords |> List.forall (fun (dr, dc) -> g.[r + dr, c + dc] = '#' || g.[r + dr, c + dc] = 'O') then
+                        let hasHash = monsterCoords |> List.exists (fun (dr, dc) -> g.[r + dr, c + dc] = '#')
+                        if hasHash then
+                            count <- count + 1
+                            monsterCoords |> List.iter (fun (dr, dc) -> g.[r + dr, c + dc] <- 'O')
+                        
+            (g, count)
+
+        let cropped = fullArray |> cropGrid
+
+        let (markedGrid, monsterCount) =
+            cropped
+            |> orientations
+            |> List.map markMonsters
+            |> List.maxBy snd
+
+        let totalHashes = 
+            cropped 
+            |> Seq.cast<char> 
+            |> Seq.filter ((=) '#') 
             |> Seq.length
 
-        let orientations (grid: char[,]) =
-            let r1 = rotateClockwise grid
-            let r2 = rotateClockwise r1
-            let r3 = rotateClockwise r2
-            let flipped = flipVertical grid
-            let f1 = rotateClockwise flipped
-            let f2 = rotateClockwise f1
-            let f3 = rotateClockwise f2
-            [ grid; r1; r2; r3; flipped; f1; f2; f3 ]
-
-        let seaMonsterCount =
-            fullArray   
-            |> cropGrid 
-            |> orientations
-            |> List.map countMonsters
-            |> List.max
-
-        // Section 6 - Calculate Sea Roughness
-
-        fullArray
-        |> Seq.cast<char>
-        |> Seq.sumBy (fun c -> if c = '#' then 1 else 0)
-        |> fun x -> x - 15 * seaMonsterCount
-
-
-
+        totalHashes

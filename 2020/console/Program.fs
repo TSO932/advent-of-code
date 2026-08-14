@@ -77,6 +77,11 @@ let main argv =
     printfn "Day 20 Part 2: %i" (Day20Part2.calculateSeaRoughness(readInput 20))
     // printfn "Day 20 Part 1 Elapsed Milliseconds: %f " (PerformanceMeasure.measurePerformance(Day20Part1.findCorners, readInput 20))
 
+
+    // 765 is too low
+    // 2584 is too high
+    // 795 not right
+
     printfn "Day 21 Part 1: %i" (Day21Part1.countSafeIngredients (readInput 21))
     printfn "Day 21 Part 2: %s" (Day21Part2.listDangerousIngredients (readInput 21))
 
