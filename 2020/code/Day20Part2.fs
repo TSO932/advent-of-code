@@ -14,14 +14,6 @@ module Day20Part2 =
         | Top 
         | Bottom 
 
-    let isSeaMonster (grid: char[,]) : bool =
-        let monsterCoords = [
-            (0, 18)
-            (1, 0); (1, 5); (1, 6); (1, 11); (1, 12); (1, 17); (1, 18); (1, 19)
-            (2, 1); (2, 4); (2, 7); (2, 10); (2, 13); (2, 16)
-        ]
-        monsterCoords |> List.forall (fun (r, c) -> grid.[r, c] = '#')
-
     let flipVertical (tile: char[,]) : char[,] =
         let rows = Array2D.length1 tile
         let cols = Array2D.length2 tile
@@ -79,6 +71,7 @@ module Day20Part2 =
                 let tileId = int64 (fst x).[5..8]
                 let grid = Array2D.init 10 10 (fun i j -> (snd x |> Array.ofSeq).[i].[j])
                 (tileId, grid))
+            |> Seq.toList
 
         let getEdges (pixel: char[,]) =
             let edges = getEdgesSeq pixel
@@ -215,7 +208,6 @@ module Day20Part2 =
                     grid.[r + i - 1, c + j - 1] <- tile.[i, j]
             grid
 
-        // --- FIX: Correctly orient the start square before placement ---
         let getTileGrid tileId =
             parsedTiles |> Seq.find (fun (id, _) -> id = tileId) |> snd
 
@@ -240,14 +232,11 @@ module Day20Part2 =
             tile
             |> orientations
             |> List.find (fun g ->
-                // Orient so the 2 matching edges point RIGHT (column 9) and BOTTOM (row 9)
                 isEdgeMatched g.[9, *] && isEdgeMatched g.[*, 9])
 
         let startGrid = orientCorner rawStartGrid
-        // -----------------------------------------------------------------
 
         let initialFullArray = addTile startPosition startPosition startGrid emptyArray
-// <<<< END REPLACE >>>>
 
         let rec placeNextTile y x currentTile currGridFlipped currentFullArray remainingLinks =
             match Map.tryFind currentTile remainingLinks with
@@ -377,10 +366,9 @@ module Day20Part2 =
             |> List.map markMonsters
             |> List.maxBy snd
 
-        let totalHashes = 
-            cropped 
-            |> Seq.cast<char> 
-            |> Seq.filter ((=) '#') 
-            |> Seq.length
-
-        totalHashes
+        for r in 0 .. Array2D.length1 markedGrid - 1 do printfn "%s" (System.String(markedGrid.[r, *]))
+        
+        markedGrid 
+        |> Seq.cast<char> 
+        |> Seq.filter ((=) '#') 
+        |> Seq.length
