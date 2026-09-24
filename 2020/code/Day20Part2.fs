@@ -1,18 +1,8 @@
 namespace AoC2020
 
-open System.Collections.Generic
+open System
 
 module Day20Part2 =
-
-    type Face = 
-        | Obverse 
-        | Reverse
-
-    type Direction = 
-        | Left 
-        | Right
-        | Top 
-        | Bottom 
 
     let flipVertical (tile: char[,]) : char[,] =
         let rows = Array2D.length1 tile
@@ -29,14 +19,6 @@ module Day20Part2 =
         let cols = Array2D.length2 tile
         Array2D.init rows cols (fun r c -> tile.[cols - 1 - c, r])
 
-    let rotateAntilockwise (tile: char[,]) : char[,] =
-        let rows = Array2D.length1 tile
-        let cols = Array2D.length2 tile
-        Array2D.init rows cols (fun r c -> tile.[c, rows - 1 - r])
-
-    let rotateClockAndflipHoriz (tile: char[,]) : char[,] =
-        tile |> rotateClockwise |> flipHorizontal
-
     let orientations (grid: char[,]) =
         let r1 = rotateClockwise grid
         let r2 = rotateClockwise r1
@@ -47,294 +29,127 @@ module Day20Part2 =
         let f3 = rotateClockwise f2
         [ grid; r1; r2; r3; flipped; f1; f2; f3 ]
 
-    let getEdgesSeq (pixel: char[,]) =
+    let getEdges (tile: char[,]) =
             seq {
-                pixel.[0, 0..9]
-                pixel.[9, 0..9]
-                pixel.[0..9, 0]
-                pixel.[0..9, 9]
+                tile.[0,*]
+                tile.[9, *]
+                tile.[*, 0]
+                tile.[*, 9]
             }
 
     let calculateSeaRoughness (pixels: seq<string>) =
 
-        // Section 1 - Parse Data
+        // Section 1 - Parse data
 
-        let tileRows =
-            pixels
-            |> Seq.filter (fun x -> x.Length > 0)
-            |> Seq.chunkBySize 11
-            |> Seq.map (fun x -> (Seq.head x, Seq.tail x))
+        let p = Seq.map (fun x -> (Seq.head x, Seq.tail x)) (pixels |> Seq.filter  (fun x -> x.Length > 0) |> Seq.chunkBySize 11)
+        let tiles = p |> Seq.map (fun x -> (int64 (fst x).[5..8], (Array2D.init 10 10 (fun i j -> (snd x |> Array.ofSeq).[i].[j]))))
 
-        let parsedTiles =
-            tileRows
-            |> Seq.map (fun x ->
-                let tileId = int64 (fst x).[5..8]
-                let grid = Array2D.init 10 10 (fun i j -> (snd x |> Array.ofSeq).[i].[j])
-                (tileId, grid))
-            |> Seq.toList
+        // Section 2 - Place tiles
+        let tileSize = 10
+        let tilesPerRow = tiles |> Seq.length |> float |> sqrt |> int
+        let fullSize = tileSize * tilesPerRow
+        let grid = Array2D.create<char> fullSize fullSize '_'
 
-        let getEdges (pixel: char[,]) =
-            let edges = getEdgesSeq pixel
-            Seq.concat (seq { edges; edges |> Seq.map (Array.rev) })
-            |> Seq.map System.String.Concat
+        let edgeKey (edge: char[]) =
+            let edgeText = String.Concat edge
+            let reversed = edgeText |> Seq.rev |> String.Concat
+            min edgeText reversed
 
-        // Section 2 - Get Edges
+        let edgeCounts =
+            tiles
+            |> Seq.collect (fun (_, tile) -> getEdges tile |> Seq.map edgeKey)
+            |> Seq.countBy id
+            |> Map.ofSeq
 
-        let pixelsEdges =
-            parsedTiles
-            |> Seq.map (fun (tileNumber, pixel) -> (tileNumber, getEdges pixel))
+        let isOuterEdge (edge: char[]) = edgeCounts.[edgeKey edge] = 1
+        let placed = Array2D.create<(int64 * char[,]) option> tilesPerRow tilesPerRow None
 
-        let matchedSquares (tile1, edges1) =
-            let edgeSet1 = Set.ofSeq edges1
+        let orientationCandidates (tile: char[,]) =
+            orientations tile
+            |> List.distinctBy (fun candidate ->
+                [| for r in 0 .. tileSize - 1 do
+                       for c in 0 .. tileSize - 1 do
+                           yield candidate.[r, c] |])
 
-            let matchedTiles =
-                pixelsEdges
-                |> Seq.choose (fun (tile2, edges2) ->
-                    if tile1 <> tile2 && Seq.exists edgeSet1.Contains edges2 then
-                        Some tile2
+        let matchesNeighbours row col (tile: char[,]) =
+            let leftMatches =
+                if col = 0 then
+                    isOuterEdge tile.[*, 0]
+                else
+                    match placed.[row, col - 1] with
+                    | Some (_, leftTile) -> tile.[*, 0] = leftTile.[*, tileSize - 1]
+                    | None -> false
+
+            let topMatches =
+                if row = 0 then
+                    isOuterEdge tile.[0, *]
+                else
+                    match placed.[row - 1, col] with
+                    | Some (_, topTile) -> tile.[0, *] = topTile.[tileSize - 1, *]
+                    | None -> false
+
+            let rightMatches = col < tilesPerRow - 1 || isOuterEdge tile.[*, tileSize - 1]
+            let bottomMatches = row < tilesPerRow - 1 || isOuterEdge tile.[tileSize - 1, *]
+            leftMatches && topMatches && rightMatches && bottomMatches
+
+        let copyTileToGrid row col (tile: char[,]) =
+            for tileRow in 0 .. tileSize - 1 do
+                for tileCol in 0 .. tileSize - 1 do
+                    grid.[row * tileSize + tileRow, col * tileSize + tileCol] <- tile.[tileRow, tileCol]
+
+        let clearTileFromGrid row col =
+            for tileRow in 0 .. tileSize - 1 do
+                for tileCol in 0 .. tileSize - 1 do
+                    grid.[row * tileSize + tileRow, col * tileSize + tileCol] <- '_'
+
+        let rec placeTile position used =
+            if position = tilesPerRow * tilesPerRow then
+                true
+            else
+                let row = position / tilesPerRow
+                let col = position % tilesPerRow
+
+                tiles
+                |> Seq.toList
+                |> List.tryPick (fun (tileId, rawTile) ->
+                    if Set.contains tileId used then
+                        None
                     else
-                        None)
+                        rawTile
+                        |> orientationCandidates
+                        |> List.tryPick (fun tile ->
+                            if matchesNeighbours row col tile then
+                                placed.[row, col] <- Some (tileId, tile)
+                                copyTileToGrid row col tile
 
-            tile1, matchedTiles
+                                if placeTile (position + 1) (Set.add tileId used) then
+                                    Some ()
+                                else
+                                    placed.[row, col] <- None
+                                    clearTileFromGrid row col
+                                    None
+                            else
+                                None))
+                |> Option.isSome
 
-        // Section 3 - Put tiles into a sequence
+        if not (placeTile 0 Set.empty) then
+            failwith "Could not place all tiles"
 
-        let unselectedTiles = Dictionary<int64, list<int64>>()
+        // Section 3 - Remove the border from every tile
 
-        pixelsEdges
-        |> Seq.map matchedSquares
-        |> Seq.iter (fun (tile, neighbours) -> unselectedTiles.Add(tile, List.ofSeq neighbours))
+        let innerTileSize = tileSize - 2
+        let innerSize = innerTileSize * tilesPerRow
 
-        let allTiles = unselectedTiles |> Seq.toList
-
-        let mutable linksList = []
-
-        let rec ringPath startSquare =
-
-            let outerRing = Dictionary<int64, list<int64>>()
-            let innerRings = Dictionary<int64, list<int64>>()
-
-            unselectedTiles
-            |> Seq.iter (fun (KeyValue(tile, neighbours)) ->
-                if Seq.length neighbours = 4 then
-                    innerRings.Add(tile, List.ofSeq neighbours)
-                else
-                    outerRing.Add(tile, List.ofSeq neighbours))
-
-            outerRing
-            |> Seq.iter (fun (KeyValue(tile, neighbours)) ->
-                outerRing.[tile] <- neighbours |> List.filter (fun n -> not (innerRings.Keys |> Seq.contains n)))
-
-            innerRings
-            |> Seq.iter (fun (KeyValue(tile, neighbours)) ->
-                innerRings.[tile] <- neighbours |> List.filter (fun n -> not (outerRing.Keys |> Seq.contains n)))
-
-            let secondSquare = Seq.head unselectedTiles[startSquare]
-
-            unselectedTiles.Remove(startSquare) |> ignore
-            outerRing.Remove(startSquare) |> ignore
-
-            let addLink tileA tileB =
-                unselectedTiles.Remove(tileB) |> ignore
-                outerRing.Remove(tileB) |> ignore
-
-                let removeNeighbours (tiles: Dictionary<int64, list<int64>>) =
-                    tiles
-                    |> Seq.iter (fun (KeyValue(tile, neighbours)) ->
-                        tiles[tile] <- neighbours |> List.filter (fun n -> n <> tileB))
-
-                removeNeighbours outerRing
-                removeNeighbours unselectedTiles
-
-                linksList <- (tileA, tileB) :: linksList
-
-            addLink startSquare secondSquare
-
-            let rec nextTile previousTile =
-                if outerRing.Count = 0 then
-                    ()
-                else
-                    let nextOne =
-                        outerRing
-                        |> Seq.choose (fun (KeyValue(tile, neighbours)) ->
-                            if Seq.length neighbours = 1 then Some tile else None)
-                        |> Seq.exactlyOne
-
-                    addLink previousTile nextOne
-                    nextTile nextOne
-
-            nextTile secondSquare
-
-            let lastTile = snd (List.head linksList)
-
-            let nextNeighbour =
-                allTiles
-                |> List.find (fun (KeyValue(tile, _)) -> tile = lastTile)
-                |> fun (KeyValue(_, neighbours)) -> neighbours
-                |> Seq.filter (fun t -> innerRings.Keys |> Seq.contains t)
-                |> Seq.tryExactlyOne
-
-            match nextNeighbour with
-            | Some t ->
-                if unselectedTiles.Count = 1 then
-                    linksList <- (lastTile, t) :: linksList
-                else
-                    ringPath t
-            | None -> ()
-
-        let startSquare = 
-            unselectedTiles
-            |> Seq.filter (fun tile -> Seq.length tile.Value = 2)
-            |> Seq.map (fun tile -> tile.Key)
-            |> Seq.head
-
-        let startNeighbours = unselectedTiles.GetValueOrDefault(startSquare)
-
-        ringPath startSquare
-
-        let linksMap = Map.ofList linksList
-
-        // Section 4 - Place tiles on grid
-
-        let numberRows = sqrt (float (Seq.length parsedTiles)) |> int
-        let fullSize = 8 * (2 * numberRows - 1)
-        let startPosition = 8 * (numberRows - 1)
-        let emptyArray = Array2D.create<char> fullSize fullSize '_'
-
-        let addTile r c (tile: char[,]) (currentGrid: char[,]) =
-            let grid = Array2D.copy currentGrid
-            for i in 1 .. 8 do
-                for j in 1 .. 8 do
-                    grid.[r + i - 1, c + j - 1] <- tile.[i, j]
-            grid
-
-        let getTileGrid tileId =
-            parsedTiles |> Seq.find (fun (id, _) -> id = tileId) |> snd
-
-        let rawStartGrid = getTileGrid startSquare
-
-        let neighbor1Grid = getTileGrid startNeighbours.[0]
-        let neighbor2Grid = getTileGrid startNeighbours.[1]
-
-        let getEdges (pixel: char[,]) =
-            pixel |> getEdgesSeq |> Seq.map System.String.Concat |> Set.ofSeq
-
-        let n1Edges = getEdges neighbor1Grid
-        let n2Edges = getEdges neighbor2Grid
-
-        let isEdgeMatched (edge: char[]) =
-            let s = System.String.Concat edge
-            let revS = System.String.Concat (Array.rev edge)
-            Set.contains s n1Edges || Set.contains revS n1Edges ||
-            Set.contains s n2Edges || Set.contains revS n2Edges
-
-        let orientCorner (tile: char[,]) =
-            tile
-            |> orientations
-            |> List.find (fun g ->
-                isEdgeMatched g.[9, *] && isEdgeMatched g.[*, 9])
-
-        let startGrid = orientCorner rawStartGrid
-
-        let initialFullArray = addTile startPosition startPosition startGrid emptyArray
-
-        let rec placeNextTile y x currentTile currGridFlipped currentFullArray remainingLinks =
-            match Map.tryFind currentTile remainingLinks with
-            | None -> currentFullArray
-            | Some nextTile ->
-                let updatedLinks = Map.remove currentTile remainingLinks
-
-                let getEdge (face: Face) (direction: Direction) (tile: char[,]) =
-                    let edge = 
-                        match direction with
-                        | Left   -> tile.[*, 0]
-                        | Right  -> tile.[*, 9]
-                        | Top    -> tile.[0, *]
-                        | Bottom -> tile.[9, *]
-
-                    match face with
-                    | Obverse -> edge
-                    | Reverse -> Array.rev edge
-
-                let allDirections = seq { Direction.Left; Direction.Right; Direction.Top; Direction.Bottom }
-                let bothFaces = seq { Face.Obverse; Face.Reverse }
-                
-                let getEdges faces tile =
-                    allDirections
-                    |> Seq.map (fun dir -> faces |> Seq.map (fun face -> (dir, face, getEdge face dir tile)))
-                    |> Seq.concat
-
-                let currentEdges = getEdges [Face.Obverse] currGridFlipped
-
-                let nextGrid =
-                    parsedTiles
-                    |> Seq.find (fun (tileId, _) -> tileId = nextTile)
-                    |> snd
-
-                let nextEdges = getEdges bothFaces nextGrid
-
-                let matchedCurrentEdge =
-                    let nxtSet = nextEdges |> Seq.map (fun (_, _, e) -> e) |> Set.ofSeq
-                    currentEdges |> Seq.filter (fun (_, _, e) -> nxtSet.Contains e) |> Seq.exactlyOne
-
-                let matchedNextEdge =
-                    let curSet = currentEdges |> Seq.map (fun (_, _, e) -> e) |> Set.ofSeq
-                    nextEdges |> Seq.filter (fun (_, _, e) -> curSet.Contains e) |> Seq.exactlyOne
-
-                let faceGrid =
-                    match matchedNextEdge with
-                    | (_, Face.Obverse, _) -> nextGrid
-                    | (Direction.Right, Face.Reverse, _)
-                    | (Direction.Left, Face.Reverse, _) -> flipVertical nextGrid
-                    | (Direction.Top, Face.Reverse, _)
-                    | (Direction.Bottom, Face.Reverse, _) -> flipHorizontal nextGrid
-                    
-                let (yNew, xNew, flippedTile) =
-                    match matchedCurrentEdge, matchedNextEdge with
-                    | (Direction.Right, _, _), (Direction.Right, _, _) -> (y, x + 8, flipHorizontal faceGrid)
-                    | (Direction.Right, _, _), (Direction.Left, _, _) -> (y, x + 8, faceGrid)
-                    | (Direction.Right, _, _), (Direction.Top, _, _) -> (y, x + 8, rotateClockAndflipHoriz faceGrid)
-                    | (Direction.Right, _, _), (Direction.Bottom, _, _) -> (y, x + 8, rotateClockwise faceGrid)
-
-                    | (Direction.Left, _, _), (Direction.Right, _, _) -> (y, x - 8, faceGrid)
-                    | (Direction.Left, _, _), (Direction.Left, _, _) -> (y, x - 8, flipHorizontal faceGrid)
-                    | (Direction.Left, _, _), (Direction.Top, _, _) -> (y, x - 8, rotateClockwise faceGrid)
-                    | (Direction.Left, _, _), (Direction.Bottom, _, _) -> (y, x - 8, rotateClockAndflipHoriz faceGrid)
-
-                    | (Direction.Bottom, _, _), (Direction.Right, _, _) -> (y + 8, x, rotateAntilockwise faceGrid)
-                    | (Direction.Bottom, _, _), (Direction.Left, _, _) -> (y + 8, x, rotateClockAndflipHoriz faceGrid)
-                    | (Direction.Bottom, _, _), (Direction.Top, _, _) -> (y + 8, x, faceGrid)
-                    | (Direction.Bottom, _, _), (Direction.Bottom, _, _) -> (y + 8, x, flipVertical faceGrid)
-                    
-                    | (Direction.Top, _, _), (Direction.Right, _, _) -> (y - 8, x, rotateClockAndflipHoriz faceGrid)
-                    | (Direction.Top, _, _), (Direction.Left, _, _) -> (y - 8, x, rotateAntilockwise faceGrid)
-                    | (Direction.Top, _, _), (Direction.Top, _, _) -> (y - 8, x, flipVertical faceGrid)
-                    | (Direction.Top, _, _), (Direction.Bottom, _, _) -> (y - 8, x, faceGrid)
-
-                let nextFullArray = addTile yNew xNew flippedTile currentFullArray
-                
-                placeNextTile yNew xNew nextTile flippedTile nextFullArray updatedLinks
-
-        let fullArray = placeNextTile startPosition startPosition startSquare startGrid initialFullArray linksMap
-
-        // Section 5 - Trim grid and remove tile borders
-
-        let cropGrid (grid: char[,]) : char[,] =
-            let points = seq {
-                for r in 0 .. (Array2D.length1 grid) - 1 do
-                    for c in 0 .. (Array2D.length2 grid) - 1 do
-                        if grid.[r, c] <> '_' then
-                            yield (r, c)
-            }
-
-            let minR = points |> Seq.map fst |> Seq.min
-            let maxR = points |> Seq.map fst |> Seq.max
-            let minC = points |> Seq.map snd |> Seq.min
-            let maxC = points |> Seq.map snd |> Seq.max
-
-            grid.[minR .. maxR, minC .. maxC]   
+        let removeTileBorders (grid: char[,]) : char[,] =
+            Array2D.init innerSize innerSize (fun row col ->
+                let tileRow = row / innerTileSize
+                let tileCol = col / innerTileSize
+                let tileRowOffset = row % innerTileSize + 1
+                let tileColOffset = col % innerTileSize + 1
+                grid.[tileRow * tileSize + tileRowOffset,
+                      tileCol * tileSize + tileColOffset])
             
-        // Section 6 - Count Sea Monsters & Calculate Sea Roughness
+        // Section 4 - Count sea monsters and calculate sea roughness
 
         let monsterCoords = [
             (0, 18)
@@ -358,15 +173,17 @@ module Day20Part2 =
                         
             (g, count)
 
-        let cropped = fullArray |> cropGrid
+        let cropped = grid |> removeTileBorders
 
-        let (markedGrid, monsterCount) =
+        let markedGrid =
             cropped
             |> orientations
             |> List.map markMonsters
             |> List.maxBy snd
+            |> fst
 
-        for r in 0 .. Array2D.length1 markedGrid - 1 do printfn "%s" (System.String(markedGrid.[r, *]))
+        // Uncomment to print the finished grid.
+        // for r in 0 .. Array2D.length1 markedGrid - 1 do printfn "%s" (System.String(markedGrid.[r, *]))
         
         markedGrid 
         |> Seq.cast<char> 
